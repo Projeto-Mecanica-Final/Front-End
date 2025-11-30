@@ -1,23 +1,29 @@
 .main-layout {
   margin-top: 70px;
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
   background-color: var(--content-bg);
-  padding-top: 170px;
+  overflow-y: auto;     
+  overflow-x: hidden;
+
+  padding-top: 0;    
 }
 
 main {
-  margin-top: 70px; // mesma altura do header
+  margin-top: 70px; /* abaixo do header fixo */
+  margin-left: 5%;
+  margin-right: 5%;
 }
 
-.container-xxl {
-  margin-top: 85px; 
-}
 
 .content-area {
   flex: 1;
   padding: 2rem;
-  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.container-xxl {
+  margin-top: 85px; 
 }
 
 /* Responsividade */
