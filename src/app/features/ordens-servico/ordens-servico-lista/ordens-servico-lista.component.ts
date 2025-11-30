@@ -670,62 +670,100 @@ export class OrdensServicoListaComponent implements OnInit {
   }
 
   salvar(): void {
-    if (this.ordemForm.invalid) {
-      alert('Preencha todos os campos obrigatórios');
-      return;
-    }
-
-    if (this.itens().length === 0) {
-      alert('Adicione pelo menos um produto ou serviço');
-      return;
-    }
-
-    this.isSubmitting.set(true);
-    const formValue = this.ordemForm.value;
-
-    const itensRequest: ItemOrdemServicoRequest[] = this.itens().map(
-      (item) => ({
-        cdProduto: item.tipo === 'produto' ? item.codigo : undefined,
-        cdServico: item.tipo === 'servico' ? item.codigo : undefined,
-        quantidade: item.quantidade,
-        vlUnitario: item.vlUnitario,
-      })
-    );
-
-    const dados: OrdemServicoRequest = {
-      cdCliente: formValue.cdCliente,
-      cdVeiculo: formValue.cdVeiculo,
-      cdMecanico: formValue.cdMecanico,
-      tipoOrdemOrcamento: formValue.tipoOrdemOrcamento,
-      dataAgendamento: formValue.dataAgendamento || undefined,
-      vlMaoObra: parseFloat(formValue.vlMaoObraExtra) || 0,
-      diagnostico: formValue.diagnostico || undefined,
-      itens: itensRequest,
-    };
-
-    console.log('📤 Enviando ordem:', dados);
-
-    this.ordemServicoService.criar(dados).subscribe({
-      next: () => {
-        console.log('Ordem criada');
-        this.isSubmitting.set(false);
-        this.fecharModal();
-        this.carregarOrdens();
-        alert('Ordem de serviço criada com sucesso!');
-      },
-      error: (error) => {
-        console.error('Erro ao salvar:', error);
-        this.isSubmitting.set(false);
-        alert(
-          ' ' +
-            (error.error?.message ||
-              error.message ||
-              'Erro ao salvar ordem de serviço')
-        );
-      },
-    });
+  if (this.ordemForm.invalid) {
+    alert('Preencha todos os campos obrigatórios');
+    return;
   }
+  
+  if (this.itens().length === 0) {
+    alert('Adicione pelo menos um produto ou serviço');
+    return;
+  }
+  
+  this.isSubmitting.set(true);
+  const formValue = this.ordemForm.value;
+  
+  const itensRequest: ItemOrdemServicoRequest[] = this.itens().map(item => ({
+    cdProduto: item.tipo === 'produto' ? item.codigo : undefined,
+    cdServico: item.tipo === 'servico' ? item.codigo : undefined,
+    quantidade: item.quantidade,
+    vlUnitario: item.vlUnitario
+  }));
 
+  const dados: OrdemServicoRequest = {
+    cdCliente: formValue.cdCliente,
+    cdVeiculo: formValue.cdVeiculo,
+    cdMecanico: formValue.cdMecanico,
+    tipoOrdemOrcamento: formValue.tipoOrdemOrcamento,
+    dataAgendamento: formValue.dataAgendamento || undefined,
+    vlMaoObra: parseFloat(formValue.vlMaoObraExtra) || 0,
+    diagnostico: formValue.diagnostico || undefined,
+    itens: itensRequest
+  };
+  
+  console.log('📤 Enviando ordem:', dados);
+  
+  this.ordemServicoService.criar(dados).subscribe({
+    next: () => {
+      console.log('Ordem criada com sucesso');
+      this.isSubmitting.set(false);
+      this.fecharModal();
+      this.carregarOrdens();
+      this.mostrarMensagemSucesso('Ordem de serviço criada com sucesso!');
+    },
+    error: (error) => {
+      console.error('Erro ao salvar ordem:', error);
+      this.isSubmitting.set(false);
+      
+      const mensagemErro = this.tratarErroAgendamento(error);
+      this.mostrarMensagemErro(mensagemErro);
+    }
+  });
+}
+
+private tratarErroAgendamento(error: any): string {
+  const mensagem = error?.message || error?.error?.message || '';
+  
+  if (mensagem.includes('já tem agendamento') || 
+      mensagem.includes('Mecânico já possui agendamento') ||
+      mensagem.includes('data já está ocupada')) {
+    
+    const dataMatch = mensagem.match(/\d{4}-\d{2}-\d{2}/);
+    const dataFormatada = dataMatch ? this.formatarDataSimples(dataMatch[0]) : 'essa data';
+    
+    return `Conflito de Agendamento\n\nO mecânico selecionado já possui um agendamento para ${dataFormatada}.\n\nPor favor, escolha:\n• Outro mecânico disponível\n• Outra data para o serviço`;
+  }
+  
+  if (mensagem.includes('Estoque insuficiente')) {
+    return `Estoque Insuficiente\n\n${mensagem}\n\nVerifique a disponibilidade dos produtos antes de continuar.`;
+  }
+  
+  return `Erro ao Salvar\n\n${mensagem || 'Ocorreu um erro ao criar a ordem de serviço. Tente novamente.'}`;
+}
+
+private mostrarMensagemSucesso(mensagem: string): void {
+  
+  this.mostrarAlertCustomizado('success', 'Sucesso!', mensagem);
+}
+
+private mostrarMensagemErro(mensagem: string): void {
+  this.mostrarAlertCustomizado('error', 'Atenção!', mensagem);
+}
+
+private mostrarAlertCustomizado(tipo: 'success' | 'error' | 'warning', titulo: string, mensagem: string): void {
+
+  alert(`${titulo}\n\n${mensagem}`);
+  
+}
+
+private formatarDataSimples(dataISO: string): string {
+  try {
+    const [ano, mes, dia] = dataISO.split('-');
+    return `${dia}/${mes}/${ano}`;
+  } catch {
+    return dataISO;
+  }
+}
   abrirModalAprovar(ordem: OrdemServico): void {
     this.ordemParaAprovar.set(ordem);
     const hoje = new Date().toISOString().split('T')[0];
