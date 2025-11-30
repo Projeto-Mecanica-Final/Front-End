@@ -67,3 +67,21 @@
 .input-group-text {
   background-color: var(--bg-body);
 }
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+
+    i {
+      font-size: 4rem;
+      color: var(--text-muted);
+      opacity: 0.5;
+      margin-bottom: 1rem;
+    }
+
+    p {
+      color: var(--text-muted);
+      margin: 0;
+    }
+}
+
