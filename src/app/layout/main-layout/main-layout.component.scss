@@ -1,7 +1,17 @@
 .main-layout {
+  margin-top: 70px;
   display: flex;
   min-height: 100vh;
   background-color: var(--content-bg);
+  padding-top: 170px;
+}
+
+main {
+  margin-top: 70px; // mesma altura do header
+}
+
+.container-xxl {
+  margin-top: 85px; 
 }
 
 .content-area {
