@@ -353,35 +353,41 @@ validarDataFutura(control: any): { [key: string]: boolean } | null {
   }
 
   aplicarFiltro(): void {
-    let filtradas = this.ordens();
+  let filtradas = this.ordens();
 
-    console.log('Aplicando filtro...');
-    console.log('  - Total de ordens:', filtradas.length);
-    console.log('  - Filtro de status:', this.filtroStatus());
-    console.log('  - Termo de busca:', this.searchTerm);
+  console.log('Aplicando filtro...');
+  console.log('  - Total de ordens:', filtradas.length);
+  console.log('  - Filtro de status:', this.filtroStatus());
+  console.log('  - Termo de busca:', this.searchTerm);
 
-    if (this.filtroStatus() !== 'TODOS') {
-      filtradas = filtradas.filter((o) => o.status === this.filtroStatus());
-      console.log('  - Após filtro de status:', filtradas.length);
-    }
-
-    const termo = this.searchTerm.toLowerCase().trim();
-    if (termo) {
-      filtradas = filtradas.filter(
-        (ordem) =>
-          ordem.nmCliente?.toLowerCase().includes(termo) ||
-          ordem.placaVeiculo?.toLowerCase().includes(termo) ||
-          ordem.modeloVeiculo?.toLowerCase().includes(termo) ||
-          ordem.nmMecanico?.toLowerCase().includes(termo) ||
-          ordem.diagnostico?.toLowerCase().includes(termo) ||
-          ordem.cdOrdemServico.toString().includes(termo)
-      );
-      console.log('  - Após busca:', filtradas.length);
-    }
-
-    console.log('Ordens filtradas:', filtradas.length);
-    this.ordensFiltradas.set(filtradas);
+  if (this.filtroStatus() !== 'TODOS') {
+    filtradas = filtradas.filter((o) => o.status === this.filtroStatus());
+    console.log('  - Após filtro de status:', filtradas.length);
   }
+
+  const termo = this.searchTerm.toLowerCase().trim();
+  if (termo) {
+    filtradas = filtradas.filter(
+      (ordem) =>
+        ordem.nmCliente?.toLowerCase().includes(termo) ||
+        ordem.placaVeiculo?.toLowerCase().includes(termo) ||
+        ordem.modeloVeiculo?.toLowerCase().includes(termo) ||
+        ordem.nmMecanico?.toLowerCase().includes(termo) ||
+        ordem.diagnostico?.toLowerCase().includes(termo) ||
+        ordem.cdOrdemServico.toString().includes(termo)
+    );
+    console.log('  - Após busca:', filtradas.length);
+  }
+
+  filtradas.sort((a, b) => {
+    const dataA = new Date(a.dataAbertura || a.dataAgendamento || 0);
+    const dataB = new Date(b.dataAbertura || b.dataAgendamento || 0);
+    return dataB.getTime() - dataA.getTime();
+  });
+
+  console.log('Ordens filtradas e ordenadas:', filtradas.length);
+  this.ordensFiltradas.set(filtradas);
+}
 
   alterarFiltroStatus(status: Status | 'TODOS'): void {
     this.filtroStatus.set(status);
