@@ -79,7 +79,7 @@ export class SidebarComponent {
       label: 'Faturamento',
       icon: 'bi-currency-dollar',
       route: '/faturamento',
-      roles: ['ROLE_ADMIN', 'ROLE_ATENDENTE'],
+      roles: ['ROLE_ADMIN'],
     },
   ];
 
