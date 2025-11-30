@@ -1,28 +1,11 @@
-import {
-  Component,
-  inject,
-  OnInit,
-  signal,
-  ViewChild,
-  ElementRef,
-} from '@angular/core';
+import {Component,inject,OnInit,signal,ViewChild,ElementRef,} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  FormBuilder,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-  FormsModule,
-} from '@angular/forms';
+import {FormBuilder,FormGroup,ReactiveFormsModule,Validators,FormsModule,} from '@angular/forms';
 import { UsuarioService } from '../../../core/services/usuario.service';
 import { AuthService } from '../../../core/services/auth.service';
-import {
-  Usuario,
-  UsuarioRequest,
-  UserRole,
-  AuthProvider,
-} from '../../../core/models';
+import {Usuario,UsuarioRequest,UserRole,AuthProvider,} from '../../../core/models';
 import { formatarData } from '../../../core/utils/formatters.util';
+import { formatarCPF, formatarTelefone } from '../../../core/utils/validators.util';
 
 declare var bootstrap: any;
 
@@ -86,7 +69,7 @@ export class UsuariosListaComponent implements OnInit {
       provider: [AuthProvider.LOCAL, [Validators.required]],
       roles: [[], [Validators.required]],
       cpf: ['', [Validators.required, Validators.maxLength(14)]],
-      telefone: ['', [Validators.maxLength(20)]],
+      telefone: ['', [Validators.required, Validators.maxLength(15)]],
       ativo: [true],
     });
 
@@ -323,4 +306,16 @@ export class UsuariosListaComponent implements OnInit {
   formatarData(data: string): string {
     return formatarData(data);
   }
+
+  formatarCPFInput() {
+  const cpf = this.usuarioForm.get('cpf')?.value || '';
+  const formatado = formatarCPF(cpf);
+  this.usuarioForm.get('cpf')?.setValue(formatado, { emitEvent: false });
+}
+
+formatarTelefoneInput() {
+  const tel = this.usuarioForm.get('telefone')?.value || '';
+  const formatado = formatarTelefone(tel);
+  this.usuarioForm.get('telefone')?.setValue(formatado, { emitEvent: false });
+}
 }

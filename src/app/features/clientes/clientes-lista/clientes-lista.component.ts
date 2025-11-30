@@ -48,7 +48,7 @@ export class ClientesListaComponent implements OnInit {
     this.clienteForm = this.fb.group({
       nmCliente: ['', [Validators.required, Validators.maxLength(120)]],
       cpf: ['', [Validators.required, this.cpfValidator]],
-      telefone: ['', [Validators.required]],
+      telefone: ['', [Validators.required, Validators.maxLength(15)]],
       endereco: ['', [Validators.maxLength(255)]],
       email: ['', [Validators.required, Validators.email, Validators.maxLength(150)]]
     });
@@ -65,7 +65,7 @@ export class ClientesListaComponent implements OnInit {
           this.clientes.set(clientes);
           this.clientesFiltrados.set(clientes);
         } else {
-          console.error('❌ Resposta não é um array:', clientes);
+          console.error('Resposta não é um array:', clientes);
           this.clientes.set([]);
           this.clientesFiltrados.set([]);
         }
@@ -73,7 +73,7 @@ export class ClientesListaComponent implements OnInit {
         this.isLoading.set(false);
       },
       error: (error) => {
-        console.error('❌ Erro ao carregar clientes:', error);
+        console.error('Erro ao carregar clientes:', error);
         this.isLoading.set(false);
         this.clientes.set([]);
         this.clientesFiltrados.set([]);
@@ -157,7 +157,7 @@ export class ClientesListaComponent implements OnInit {
         alert(this.modoEdicao() ? 'Cliente atualizado com sucesso!' : 'Cliente cadastrado com sucesso!');
       },
       error: (error) => {
-        console.error('❌ Erro ao salvar cliente:', error);
+        console.error('Erro ao salvar cliente:', error);
         this.isSubmitting.set(false);
         alert(error.message || 'Erro ao salvar cliente');
       }
@@ -172,7 +172,7 @@ export class ClientesListaComponent implements OnInit {
           alert('Cliente excluído com sucesso!');
         },
         error: (error) => {
-          console.error('❌ Erro ao excluir cliente:', error);
+          console.error('Erro ao excluir cliente:', error);
           alert('Erro ao excluir cliente');
         }
       });

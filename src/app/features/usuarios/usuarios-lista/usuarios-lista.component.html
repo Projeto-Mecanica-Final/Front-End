@@ -197,6 +197,7 @@
                 formControlName="cpf"
                 placeholder="000.000.000-00"
                 maxlength="14"
+                (input)="formatarCPFInput()"
                 [class.is-invalid]="isFieldInvalid('cpf')"
               />
               @if (isFieldInvalid('cpf')) {
@@ -208,7 +209,7 @@
 
             <div class="col-md-6">
               <label for="telefone" class="form-label text-body">
-                Telefone
+              Telefone <span class="text-danger">*</span>
               </label>
               <input
                 type="text"
@@ -216,7 +217,8 @@
                 id="telefone"
                 formControlName="telefone"
                 placeholder="(00) 00000-0000"
-                maxlength="20"
+                maxlength="15"
+                (input)="formatarTelefoneInput()"
                 [class.is-invalid]="isFieldInvalid('telefone')"
               />
               @if (isFieldInvalid('telefone')) {
