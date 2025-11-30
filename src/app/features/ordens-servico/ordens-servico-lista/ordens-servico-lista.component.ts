@@ -1,4 +1,3 @@
-// src/app/features/ordens-servico/ordens-servico-lista/ordens-servico-lista.component.ts
 import {
   Component,
   inject,
@@ -185,50 +184,67 @@ export class OrdensServicoListaComponent implements OnInit {
   }
 
   inicializarForms(): void {
-    this.ordemForm = this.fb.group({
-      cdCliente: ['', [Validators.required]],
-      cdVeiculo: ['', [Validators.required]],
-      cdMecanico: ['', [Validators.required]],
-      tipoOrdemOrcamento: [
-        TipoOrdemOrcamento.ORDEM_DE_SERVICO,
-        [Validators.required],
-      ],
-      dataAgendamento: [''],
-      vlMaoObraExtra: [0],
-      diagnostico: [''],
-    });
+  this.ordemForm = this.fb.group({
+    cdCliente: ['', [Validators.required]],
+    cdVeiculo: ['', [Validators.required]],
+    cdMecanico: ['', [Validators.required]],
+    tipoOrdemOrcamento: [
+      TipoOrdemOrcamento.ORDEM_DE_SERVICO,
+      [Validators.required],
+    ],
+    dataAgendamento: ['', [this.validarDataFutura.bind(this)]],
+    vlMaoObraExtra: [0],
+    diagnostico: [''],
+  });
 
-    this.aprovarForm = this.fb.group({
-      dataAgendamento: ['', [Validators.required]],
-    });
+  this.aprovarForm = this.fb.group({
+    dataAgendamento: ['', [Validators.required, this.validarDataFutura.bind(this)]],
+  });
 
-    this.editarForm = this.fb.group({
-      diagnostico: [''],
-      vlMaoObraExtra: [0],
-    });
+  this.editarForm = this.fb.group({
+    diagnostico: [''],
+    vlMaoObraExtra: [0],
+  });
 
-    this.concluirForm = this.fb.group({
-      formaPagamento: ['', [Validators.required]],
-    });
+  this.concluirForm = this.fb.group({
+    formaPagamento: ['', [Validators.required]],
+  });
 
-    this.ordemForm.get('cdCliente')?.valueChanges.subscribe((cdCliente) => {
-      if (cdCliente) {
-        this.carregarVeiculosCliente(cdCliente);
-      } else {
-        this.veiculosCliente.set([]);
-      }
-    });
+  this.ordemForm.get('cdCliente')?.valueChanges.subscribe((cdCliente) => {
+    if (cdCliente) {
+      this.carregarVeiculosCliente(cdCliente);
+    } else {
+      this.veiculosCliente.set([]);
+    }
+  });
 
-    this.ordemForm.get('tipoOrdemOrcamento')?.valueChanges.subscribe((tipo) => {
-      const dataControl = this.ordemForm.get('dataAgendamento');
-      if (tipo === TipoOrdemOrcamento.ORDEM_DE_SERVICO) {
-        dataControl?.setValidators([Validators.required]);
-      } else {
-        dataControl?.clearValidators();
-      }
-      dataControl?.updateValueAndValidity();
-    });
+ this.ordemForm.get('tipoOrdemOrcamento')?.valueChanges.subscribe((tipo) => {
+  const dataControl = this.ordemForm.get('dataAgendamento');
+  if (tipo === TipoOrdemOrcamento.ORDEM_DE_SERVICO) {
+    dataControl?.setValidators([Validators.required, this.validarDataFutura.bind(this)]);
+  } else {
+    dataControl?.setValidators([this.validarDataFutura.bind(this)]);  // ← CORREÇÃO - mantém validação de data futura
   }
+  dataControl?.updateValueAndValidity();
+});
+}
+
+validarDataFutura(control: any): { [key: string]: boolean } | null {
+  if (!control.value) {
+    return null;
+  }
+
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  
+  const dataSelecionada = new Date(control.value + 'T00:00:00');
+  
+  if (dataSelecionada < hoje) {
+    return { dataPassada: true };
+  }
+  
+  return null;
+}
 
   carregarDados(): void {
     this.isLoading.set(true);
@@ -245,12 +261,12 @@ export class OrdensServicoListaComponent implements OnInit {
 
   carregarOrdens(): Promise<void> {
     return new Promise((resolve) => {
-      console.log('🔄 Carregando TODAS as ordens...');
+      console.log('Carregando TODAS as ordens...');
 
       this.ordemServicoService.listarTodas().subscribe({
         next: (ordens) => {
-          console.log('📦 Ordens recebidas:', ordens.length);
-          console.log('📊 Dados:', ordens);
+          console.log('Ordens recebidas:', ordens.length);
+          console.log('Dados:', ordens);
 
           const porStatus = {
             AGENDADO: ordens.filter((o) => o.status === 'AGENDADO').length,
@@ -339,7 +355,7 @@ export class OrdensServicoListaComponent implements OnInit {
   aplicarFiltro(): void {
     let filtradas = this.ordens();
 
-    console.log('🔍 Aplicando filtro...');
+    console.log('Aplicando filtro...');
     console.log('  - Total de ordens:', filtradas.length);
     console.log('  - Filtro de status:', this.filtroStatus());
     console.log('  - Termo de busca:', this.searchTerm);
@@ -410,19 +426,19 @@ export class OrdensServicoListaComponent implements OnInit {
 
     if (ordem.status === 'CONCLUIDO') {
       alert(
-        '⚠️ Ordens concluídas não podem ter o status alterado. O faturamento já foi gerado.'
+        'Ordens concluídas não podem ter o status alterado. O faturamento já foi gerado.'
       );
       return;
     }
 
     if (ordem.status === 'CANCELADO') {
-      alert('⚠️ Ordens canceladas não podem ter o status alterado.');
+      alert('Ordens canceladas não podem ter o status alterado.');
       return;
     }
 
     if (novoStatus === 'CONCLUIDO') {
       if (ordem.status !== 'EM_ANDAMENTO') {
-        alert('⚠️ Só é possível concluir ordens que estão em andamento.');
+        alert('Só é possível concluir ordens que estão em andamento.');
         return;
       }
       this.abrirModalConcluir(ordem);
@@ -484,44 +500,49 @@ export class OrdensServicoListaComponent implements OnInit {
     this.concluirModalInstance?.show();
   }
 
-  concluirOrdem(): void {
-    if (this.concluirForm.invalid) {
-      alert('Selecione a forma de pagamento');
-      return;
-    }
+concluirOrdem(): void {
+  if (this.concluirForm.invalid) {
+    alert('Selecione a forma de pagamento');
+    return;
+  }
 
-    const ordem = this.ordemParaConcluir();
-    if (!ordem) return;
+  const ordem = this.ordemParaConcluir();
+  if (!ordem) return;
 
-    const formaPagamento = this.concluirForm.get('formaPagamento')?.value;
+  const formaPagamento = this.concluirForm.get('formaPagamento')?.value;
 
-    console.log(
-      'Concluindo ordem:',
-      ordem.cdOrdemServico,
-      'Pagamento:',
-      formaPagamento
-    );
-    this.isSubmitting.set(true);
+  console.log(
+    'Concluindo ordem:',
+    ordem.cdOrdemServico,
+    'Pagamento:',
+    formaPagamento
+  );
+  this.isSubmitting.set(true);
 
-    this.ordemServicoService
-      .concluir(ordem.cdOrdemServico, formaPagamento)
-      .subscribe({
-        next: () => {
-          console.log('Ordem concluída');
-          this.isSubmitting.set(false);
-          this.concluirModalInstance?.hide();
-          this.carregarOrdens();
+  this.ordemServicoService
+    .concluir(ordem.cdOrdemServico, formaPagamento)
+    .subscribe({
+      next: () => {
+        console.log('Ordem concluída');
+        this.isSubmitting.set(false);
+        this.concluirModalInstance?.hide();
+        
+        Promise.all([
+          this.carregarOrdens(),
+          this.carregarProdutos()
+        ]).then(() => {
           alert(
             'Ordem concluída com sucesso! Faturamento gerado automaticamente.'
           );
-        },
-        error: (error) => {
-          console.error('Erro ao concluir:', error);
-          this.isSubmitting.set(false);
-          alert('' + (error.error?.message || 'Erro ao concluir ordem'));
-        },
-      });
-  }
+        });
+      },
+      error: (error) => {
+        console.error('Erro ao concluir:', error);
+        this.isSubmitting.set(false);
+        alert('' + (error.error?.message || 'Erro ao concluir ordem'));
+      },
+    });
+}
 
   cancelarOrdem(ordem: OrdemServico): void {
     if (
@@ -671,6 +692,11 @@ export class OrdensServicoListaComponent implements OnInit {
 
   salvar(): void {
   if (this.ordemForm.invalid) {
+    const dataControl = this.ordemForm.get('dataAgendamento');
+    if (dataControl?.hasError('dataPassada')) {
+      alert('A data de agendamento não pode ser anterior à data atual');
+      return;
+    }
     alert('Preencha todos os campos obrigatórios');
     return;
   }
@@ -680,90 +706,165 @@ export class OrdensServicoListaComponent implements OnInit {
     return;
   }
   
-  this.isSubmitting.set(true);
-  const formValue = this.ordemForm.value;
-  
-  const itensRequest: ItemOrdemServicoRequest[] = this.itens().map(item => ({
-    cdProduto: item.tipo === 'produto' ? item.codigo : undefined,
-    cdServico: item.tipo === 'servico' ? item.codigo : undefined,
-    quantidade: item.quantidade,
-    vlUnitario: item.vlUnitario
-  }));
+    
+    this.isSubmitting.set(true);
+    const formValue = this.ordemForm.value;
+    
+    const itensRequest: ItemOrdemServicoRequest[] = this.itens().map(item => ({
+      cdProduto: item.tipo === 'produto' ? item.codigo : undefined,
+      cdServico: item.tipo === 'servico' ? item.codigo : undefined,
+      quantidade: item.quantidade,
+      vlUnitario: item.vlUnitario
+    }));
 
-  const dados: OrdemServicoRequest = {
-    cdCliente: formValue.cdCliente,
-    cdVeiculo: formValue.cdVeiculo,
-    cdMecanico: formValue.cdMecanico,
-    tipoOrdemOrcamento: formValue.tipoOrdemOrcamento,
-    dataAgendamento: formValue.dataAgendamento || undefined,
-    vlMaoObra: parseFloat(formValue.vlMaoObraExtra) || 0,
-    diagnostico: formValue.diagnostico || undefined,
-    itens: itensRequest
-  };
-  
-  console.log('📤 Enviando ordem:', dados);
-  
-  this.ordemServicoService.criar(dados).subscribe({
-    next: () => {
-      console.log('Ordem criada com sucesso');
-      this.isSubmitting.set(false);
-      this.fecharModal();
-      this.carregarOrdens();
-      this.mostrarMensagemSucesso('Ordem de serviço criada com sucesso!');
-    },
-    error: (error) => {
-      console.error('Erro ao salvar ordem:', error);
-      this.isSubmitting.set(false);
-      
-      const mensagemErro = this.tratarErroAgendamento(error);
-      this.mostrarMensagemErro(mensagemErro);
+    const dados: OrdemServicoRequest = {
+      cdCliente: formValue.cdCliente,
+      cdVeiculo: formValue.cdVeiculo,
+      cdMecanico: formValue.cdMecanico,
+      tipoOrdemOrcamento: formValue.tipoOrdemOrcamento,
+      dataAgendamento: formValue.dataAgendamento || undefined,
+      vlMaoObra: parseFloat(formValue.vlMaoObraExtra) || 0,
+      diagnostico: formValue.diagnostico || undefined,
+      itens: itensRequest
+    };
+    
+    const isOrcamento = formValue.tipoOrdemOrcamento === 'ORCAMENTO';
+    const valorTotal = this.calcularTotal();
+    
+    console.log('Enviando:', isOrcamento ? 'Orçamento' : 'Ordem de Serviço', dados);
+    
+    this.ordemServicoService.criar(dados).subscribe({
+      next: (resultado) => {
+        console.log('Criado com sucesso:', resultado);
+        this.isSubmitting.set(false);
+        this.fecharModal();
+        this.carregarOrdens();
+        
+        if (isOrcamento) {
+          this.mostrarMensagemSucesso(
+            `Orçamento Criado!\n\n` +
+            `Valor Total: ${this.formatarMoeda(valorTotal)}\n\n` +
+            `Próximos Passos:\n` +
+            `- Apresente o orçamento ao cliente\n` +
+            `- Após aprovação, clique em "Aprovar" para gerar a OS\n` +
+            `- Um agendamento será criado automaticamente`
+          );
+        } else {
+          const dataAgendamento = formValue.dataAgendamento 
+            ? `\nData Agendada: ${this.formatarDataSimples(formValue.dataAgendamento)}` 
+            : '';
+          
+          this.mostrarMensagemSucesso(
+            `Ordem de Serviço Criada!\n\n` +
+            `Valor Total: ${this.formatarMoeda(valorTotal)}` +
+            dataAgendamento + `\n\n` +
+            `- Agendamento criado\n` +
+            `- Mecânico alocado\n` +
+            `- Estoque reservado`
+          );
+        }
+      },
+      error: (error) => {
+        console.error('Erro ao salvar:', error);
+        this.isSubmitting.set(false);
+        
+        const mensagemErro = this.tratarErroAgendamento(error);
+        this.mostrarMensagemErro(mensagemErro);
+      }
+    });
+  }
+
+  aprovarOrcamento(): void {
+  if (this.aprovarForm.invalid) {
+    const dataControl = this.aprovarForm.get('dataAgendamento');
+    if (dataControl?.hasError('dataPassada')) {
+      alert('A data de agendamento não pode ser anterior à data atual');
+      return;
     }
-  });
-}
-
-private tratarErroAgendamento(error: any): string {
-  const mensagem = error?.message || error?.error?.message || '';
+    alert('Informe a data de agendamento');
+    return;
+  }
   
-  if (mensagem.includes('já tem agendamento') || 
-      mensagem.includes('Mecânico já possui agendamento') ||
-      mensagem.includes('data já está ocupada')) {
+  const ordem = this.ordemParaAprovar();
+  if (!ordem) return;
     
-    const dataMatch = mensagem.match(/\d{4}-\d{2}-\d{2}/);
-    const dataFormatada = dataMatch ? this.formatarDataSimples(dataMatch[0]) : 'essa data';
+    const dataAgendamento = this.aprovarForm.get('dataAgendamento')?.value;
     
-    return `Conflito de Agendamento\n\nO mecânico selecionado já possui um agendamento para ${dataFormatada}.\n\nPor favor, escolha:\n• Outro mecânico disponível\n• Outra data para o serviço`;
+    console.log('Aprovando orçamento:', ordem.cdOrdemServico, 'Data:', dataAgendamento);
+    this.isSubmitting.set(true);
+    
+    this.ordemServicoService.aprovarOrcamento(ordem.cdOrdemServico, dataAgendamento).subscribe({
+      next: () => {
+        console.log('Orçamento aprovado com sucesso');
+        this.isSubmitting.set(false);
+        this.aprovarModalInstance?.hide();
+        this.carregarOrdens();
+        
+        this.mostrarMensagemSucesso(
+          `Orçamento Aprovado!\n\n` +
+          `Orçamento aprovado com sucesso!\n\n` +
+          `- Ordem de Serviço criada automaticamente\n` +
+          `- Agendamento criado para ${this.formatarDataSimples(dataAgendamento)}\n` +
+          `- Mecânico alocado\n\n` +
+          `O serviço já está na agenda e pronto para execução.`
+        );
+      },
+      error: (error) => {
+        console.error('Erro ao aprovar:', error);
+        this.isSubmitting.set(false);
+        
+        const mensagemErro = this.tratarErroAgendamento(error);
+        this.mostrarMensagemErro(mensagemErro);
+      }
+    });
   }
-  
-  if (mensagem.includes('Estoque insuficiente')) {
-    return `Estoque Insuficiente\n\n${mensagem}\n\nVerifique a disponibilidade dos produtos antes de continuar.`;
+
+  private tratarErroAgendamento(error: any): string {
+    const mensagem = error?.message || error?.error?.message || '';
+    
+    if (mensagem.includes('já tem agendamento') || 
+        mensagem.includes('Mecânico já possui agendamento') ||
+        mensagem.includes('data já está ocupada')) {
+      
+      const dataMatch = mensagem.match(/\d{4}-\d{2}-\d{2}/);
+      const dataFormatada = dataMatch ? this.formatarDataSimples(dataMatch[0]) : 'essa data';
+      
+      return `CONFLITO DE AGENDAMENTO\n\n` +
+             `O mecânico selecionado já possui um agendamento para ${dataFormatada}.\n\n` +
+             `Por favor, escolha:\n` +
+             `- Outro mecânico disponível\n` +
+             `- Outra data para o serviço`;
+    }
+    
+    if (mensagem.includes('Estoque insuficiente') || mensagem.includes('estoque')) {
+      return `ESTOQUE INSUFICIENTE\n\n${mensagem}\n\nVerifique a disponibilidade dos produtos antes de continuar.`;
+    }
+    
+    if (mensagem.includes('obrigatório') || mensagem.includes('inválido')) {
+      return `DADOS INVÁLIDOS\n\n${mensagem}\n\nVerifique os campos e tente novamente.`;
+    }
+    
+    return `ERRO AO SALVAR\n\n${mensagem || 'Ocorreu um erro inesperado. Tente novamente.'}`;
   }
-  
-  return `Erro ao Salvar\n\n${mensagem || 'Ocorreu um erro ao criar a ordem de serviço. Tente novamente.'}`;
-}
 
-private mostrarMensagemSucesso(mensagem: string): void {
-  
-  this.mostrarAlertCustomizado('success', 'Sucesso!', mensagem);
-}
-
-private mostrarMensagemErro(mensagem: string): void {
-  this.mostrarAlertCustomizado('error', 'Atenção!', mensagem);
-}
-
-private mostrarAlertCustomizado(tipo: 'success' | 'error' | 'warning', titulo: string, mensagem: string): void {
-
-  alert(`${titulo}\n\n${mensagem}`);
-  
-}
-
-private formatarDataSimples(dataISO: string): string {
-  try {
-    const [ano, mes, dia] = dataISO.split('-');
-    return `${dia}/${mes}/${ano}`;
-  } catch {
-    return dataISO;
+  private mostrarMensagemSucesso(mensagem: string): void {
+    alert(mensagem);
   }
-}
+
+  private mostrarMensagemErro(mensagem: string): void {
+    alert(mensagem);
+  }
+
+  private formatarDataSimples(dataISO: string): string {
+    if (!dataISO) return '';
+    try {
+      const [ano, mes, dia] = dataISO.split('-');
+      return `${dia}/${mes}/${ano}`;
+    } catch {
+      return dataISO;
+    }
+  }
+
   abrirModalAprovar(ordem: OrdemServico): void {
     this.ordemParaAprovar.set(ordem);
     const hoje = new Date().toISOString().split('T')[0];
@@ -773,49 +874,10 @@ private formatarDataSimples(dataISO: string): string {
     this.aprovarModalInstance?.show();
   }
 
-  aprovarOrcamento(): void {
-    if (this.aprovarForm.invalid) {
-      alert('Informe a data de agendamento');
-      return;
-    }
-
-    const ordem = this.ordemParaAprovar();
-    if (!ordem) return;
-
-    const dataAgendamento = this.aprovarForm.get('dataAgendamento')?.value;
-
-    console.log(
-      'Aprovando orçamento:',
-      ordem.cdOrdemServico,
-      'Data:',
-      dataAgendamento
-    );
-    this.isSubmitting.set(true);
-
-    this.ordemServicoService
-      .aprovarOrcamento(ordem.cdOrdemServico, dataAgendamento)
-      .subscribe({
-        next: () => {
-          console.log('Orçamento aprovado');
-          this.isSubmitting.set(false);
-          this.aprovarModalInstance?.hide();
-          this.carregarOrdens();
-          alert(
-            'Orçamento aprovado! Transformado em Ordem de Serviço e agendamento criado automaticamente.'
-          );
-        },
-        error: (error) => {
-          console.error('Erro ao aprovar:', error);
-          this.isSubmitting.set(false);
-          alert('' + (error.error?.message || 'Erro ao aprovar orçamento'));
-        },
-      });
-  }
-
   excluirOrcamento(ordem: OrdemServico): void {
     if (
       !confirm(
-        `⚠️ Deseja realmente excluir este orçamento?\n\nCliente: ${
+        `Deseja realmente excluir este orçamento?\n\nCliente: ${
           ordem.nmCliente
         }\nTotal: ${this.formatarMoeda(
           ordem.vlTotal
@@ -825,7 +887,7 @@ private formatarDataSimples(dataISO: string): string {
       return;
     }
 
-    console.log('🗑️ Excluindo orçamento:', ordem.cdOrdemServico);
+    console.log('Excluindo orçamento:', ordem.cdOrdemServico);
     this.isLoading.set(true);
 
     this.ordemServicoService.deletar(ordem.cdOrdemServico).subscribe({
@@ -843,6 +905,7 @@ private formatarDataSimples(dataISO: string): string {
       },
     });
   }
+
   atualizarMaoObra(event: Event): void {
     const input = event.target as HTMLInputElement;
     const valor = parseFloat(input.value) || 0;
@@ -870,7 +933,7 @@ private formatarDataSimples(dataISO: string): string {
       vlMaoObraExtra: parseFloat(formValue.vlMaoObraExtra) || 0,
     };
 
-    console.log('📤 Atualizando ordem #' + ordem.cdOrdemServico, dados);
+    console.log('Atualizando ordem #' + ordem.cdOrdemServico, dados);
 
     this.ordemServicoService
       .atualizarDiagnosticoEMaoObra(
