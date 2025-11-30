@@ -1,5 +1,4 @@
 <div class="dashboard">
-  <!-- Cabeçalho -->
   <div class="dashboard-header">
     <div>
       <h2>Dashboard</h2>
@@ -14,7 +13,6 @@
     }
   </div>
 
-  <!-- Loading State -->
   @if (isLoading()) {
   <div class="text-center py-5">
     <div class="spinner-border text-primary" role="status">
@@ -42,7 +40,6 @@
     </div>
     }
 
-    <!-- Ordens de Serviço Abertas -->
     <div class="col-xl-3 col-md-6">
       <div class="stat-card ordens">
         <div class="stat-icon">
@@ -58,7 +55,6 @@
       </div>
     </div>
 
-    <!-- Clientes Ativos -->
     @if (isAtendente()) {
     <div class="col-xl-3 col-md-6">
       <div class="stat-card clientes">
@@ -76,7 +72,6 @@
     </div>
     }
 
-    <!-- Produtos com Estoque Baixo -->
     <div class="col-xl-3 col-md-6">
       <div
         class="stat-card estoque"
@@ -102,7 +97,6 @@
     </div>
   </div>
 
-  <!-- Ações Rápidas -->
   <div class="quick-actions mt-5">
     <h4 class="mb-4 text-body">Ações Rápidas</h4>
 

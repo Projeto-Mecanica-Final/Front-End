@@ -1,6 +1,4 @@
-<!-- src/app/features/ordens-servico/ordens-servico-lista/ordens-servico-lista.component.html -->
 <div class="ordens-page">
-  <!-- Cabeçalho -->
   <div class="page-header">
     <div>
       <h2>
@@ -18,10 +16,8 @@
     </button>
   </div>
 
-  <!-- Filtros de Status -->
   <div class="filters-bar card">
     <div class="card-body">
-      <!-- ✅ BARRA DE BUSCA -->
       <div class="row g-3 mb-3">
         <div class="col-12">
           <div class="input-group">
@@ -49,7 +45,6 @@
         </div>
       </div>
 
-      <!-- Filtros de Status -->
       <div class="status-filters">
         @for (status of statusOptions; track status.value) {
         <button
@@ -66,7 +61,6 @@
     </div>
   </div>
 
-  <!-- Loading State -->
   @if (isLoading()) {
   <div class="text-center py-5">
     <div class="spinner-border text-primary" role="status">
@@ -75,7 +69,6 @@
     <p class="text-muted mt-2">Carregando ordens...</p>
   </div>
   } @else {
-  <!-- Tabela de Ordens -->
   <div class="card">
     <div class="card-body">
       @if (ordensFiltradas().length === 0) {
@@ -121,7 +114,6 @@
                   ordem.modeloVeiculo || "-"
                 }}</small>
               </td>
-              <!-- ✅ MELHORADO: Badge de tipo mais claro com ícone -->
               <td>
                 @if (ordem.tipoOrdemOrcamento === 'ORCAMENTO') {
                 <span class="badge bg-warning text-dark">
@@ -136,7 +128,6 @@
                 }
               </td>
 
-              <!-- ✅ STATUS: DIFERENTE PARA ORÇAMENTO E OS -->
               <td>
                 @if (ordem.tipoOrdemOrcamento === 'ORCAMENTO') {
                 <!-- ✅ ORÇAMENTOS: Badge fixo sem dropdown -->
@@ -151,7 +142,6 @@
                   Aprovado
                 </span>
                 } } @else {
-                <!-- ✅ ORDENS DE SERVIÇO: Dropdown clicável -->
                 <div class="status-dropdown-container">
                   <span
                     class="badge status-clickable"
@@ -195,7 +185,6 @@
               </td>
               <td class="text-center">
                 <div class="btn-group btn-group-sm" role="group">
-                  <!-- ✅ ORÇAMENTO: Botão de Aprovar Verde e Destaque -->
                   @if (ordem.tipoOrdemOrcamento === 'ORCAMENTO') { @if
                   (!ordem.aprovado) {
                   <button
@@ -218,11 +207,8 @@
                     <i class="bi bi-check-circle me-1"></i>
                     Aprovado
                   </span>
-                  } }
-
-                  <!-- ✅ ORDEM DE SERVIÇO: Editar apenas se AGENDADO -->
-                  @if (ordem.tipoOrdemOrcamento === 'ORDEM_DE_SERVICO') { @if
-                  (ordem.status === 'AGENDADO') {
+                  } } @if (ordem.tipoOrdemOrcamento === 'ORDEM_DE_SERVICO') {
+                  @if (ordem.status === 'AGENDADO') {
                   <button
                     class="btn btn-outline-info"
                     (click)="abrirModalEditar(ordem)"
@@ -255,7 +241,6 @@
         </table>
       </div>
 
-      <!-- Rodapé com Total -->
       <div class="table-footer">
         <span class="text-muted">
           Total: <strong>{{ ordensFiltradas().length }}</strong> registro(s)
@@ -392,7 +377,6 @@
               </small>
             </div>
 
-            <!-- Produtos -->
             <div class="col-12 mt-4">
               <h6 class="section-title">
                 <i class="bi bi-box-seam me-2"></i>
@@ -445,7 +429,6 @@
               </div>
             </div>
 
-            <!-- Serviços -->
             <div class="col-12 mt-3">
               <h6 class="section-title">
                 <i class="bi bi-tools me-2"></i>
@@ -487,7 +470,6 @@
               </div>
             </div>
 
-            <!-- Itens Adicionados -->
             <div class="col-12 mt-3">
               @if (itens().length > 0) {
               <div class="table-responsive">
@@ -532,7 +514,6 @@
                       </td>
                     </tr>
                     }
-                    <!-- ✅ MÃO DE OBRA EXTRA - CORRIGIDO -->
                     <tr class="table-warning">
                       <td colspan="2"><strong>Mão de Obra Extra</strong></td>
                       <td colspan="3">
@@ -574,7 +555,6 @@
               }
             </div>
 
-            <!-- Diagnóstico -->
             <div class="col-12 mt-3">
               <label for="diagnostico" class="form-label text-body"
                 >Diagnóstico</label
@@ -617,9 +597,6 @@
   </div>
 </div>
 
-<!-- ========================================== -->
-<!-- ✅ MODAL DE APROVAÇÃO DE ORÇAMENTO -->
-<!-- ========================================== -->
 <div class="modal fade" #aprovarModal tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -716,9 +693,6 @@
   </div>
 </div>
 
-<!-- ========================================== -->
-<!-- MODAL DE EDIÇÃO -->
-<!-- ========================================== -->
 <div class="modal fade" #editarModal tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">

@@ -43,7 +43,7 @@
   --bs-body-bg: #000000;
   --bs-body-bg-rgb: 0, 0, 0;
   --bs-body-color: #ffffff;
-  --bs-body-color-rgb: 255, 255, 255; /* ← Faltava ISSO */
+  --bs-body-color-rgb: 255, 255, 255;
 
   --header-bg: #000000;
   --content-bg: #000000;
@@ -59,7 +59,7 @@
   --text-muted: #e0e0e0;
   --border-color: #ffffff;
 
-  --bs-secondary-color: #e0e0e0; /* muda o text-muted */
+  --bs-secondary-color: #e0e0e0; //text-muted
   --bs-secondary-color-rgb: 224, 224, 224;
 }
 

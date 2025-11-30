@@ -14,7 +14,6 @@
     </button>
   </div>
 
-  <!-- Barra de Pesquisa -->
   <div class="search-bar card">
     <div class="card-body">
       <div class="input-group">
@@ -32,7 +31,6 @@
     </div>
   </div>
 
-  <!-- Loading State -->
   @if (isLoading()) {
   <div class="text-center py-5">
     <div class="spinner-border text-primary" role="status">
@@ -41,7 +39,6 @@
     <p class="text-muted mt-2">Carregando veículos...</p>
   </div>
   } @else {
-  <!-- Tabela de Veículos -->
   <div class="card">
     <div class="card-body p-0">
       @if (veiculosFiltrados().length === 0) {
@@ -106,7 +103,6 @@
         </table>
       </div>
 
-      <!-- Rodapé com Total -->
       <div class="table-footer">
         <span class="text-muted">
           Total: <strong>{{ veiculosFiltrados().length }}</strong> veículo(s)
@@ -164,7 +160,6 @@
               }
             </div>
 
-            <!-- Placa -->
             <div class="col-md-6">
               <label for="placa" class="form-label text-body">
                 Placa <span class="text-danger">*</span>
@@ -189,7 +184,6 @@
               </small>
             </div>
 
-            <!-- Ano -->
             <div class="col-md-6">
               <label for="ano" class="form-label text-body">
                 Ano <span class="text-danger">*</span>
@@ -209,7 +203,6 @@
               }
             </div>
 
-            <!-- Modelo -->
             <div class="col-md-12">
               <label for="modelo" class="form-label text-body">
                 Modelo <span class="text-danger">*</span>
@@ -229,7 +222,6 @@
               }
             </div>
 
-            <!-- Marca -->
             <div class="col-md-6">
               <label for="marca" class="form-label text-body">
                 Marca <span class="text-danger">*</span>
@@ -249,7 +241,6 @@
               }
             </div>
 
-            <!-- Cor -->
             <div class="col-md-6">
               <label for="cor" class="form-label text-body">Cor</label>
               <input

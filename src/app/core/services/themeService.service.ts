@@ -13,7 +13,7 @@ export class ThemeService {
   constructor() {
     const saved =
       (localStorage.getItem(this.STORAGE_KEY) as AppTheme) || 'light';
-    this.setTheme(saved); // Aplica imediatamente ao iniciar
+    this.setTheme(saved);
   }
 
   setTheme(theme: AppTheme): void {

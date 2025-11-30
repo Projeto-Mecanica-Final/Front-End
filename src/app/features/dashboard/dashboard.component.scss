@@ -1,5 +1,4 @@
 .dashboard {
-  // Cabeçalho
   .dashboard-header {
     display: flex;
     justify-content: space-between;
@@ -27,7 +26,6 @@
     }
   }
 
-  // Cards de Estatísticas
   .stat-card {
     background: var(--white);
     border-radius: 12px;
@@ -90,7 +88,6 @@
       }
     }
 
-    // Variantes de cores
     &.faturamento {
       border-left-color: #28a745;
 
@@ -160,7 +157,6 @@
     }
   }
 
-  // Ações Rápidas
   .quick-actions {
     h4 {
       color: var(--text-dark);
@@ -242,7 +238,6 @@
   }
 }
 
-// Responsividade
 @media (max-width: 768px) {
   .dashboard {
     .dashboard-header {

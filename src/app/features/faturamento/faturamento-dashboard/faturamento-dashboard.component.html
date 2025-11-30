@@ -1,5 +1,4 @@
 <div class="faturamento-page">
-  <!-- Cabeçalho -->
   <div class="page-header">
     <div>
       <h2>
@@ -10,7 +9,6 @@
     </div>
   </div>
 
-  <!-- Cards de Totais -->
   <div class="row g-4 mb-4">
     <div class="col-md-6">
       <div class="stat-card hoje">
@@ -24,7 +22,6 @@
       </div>
     </div>
 
-    <!-- Faturamento do Período -->
     <div class="col-md-6">
       <div class="stat-card periodo">
         <div class="stat-icon">
@@ -38,7 +35,6 @@
     </div>
   </div>
 
-  <!-- Filtros -->
   <div class="filters-bar card">
     <div class="card-body">
       <form [formGroup]="filtroForm">
@@ -80,7 +76,6 @@
     </div>
   </div>
 
-  <!-- Loading -->
   @if (isLoading()) {
   <div class="text-center py-5">
     <div class="spinner-border text-primary"></div>
@@ -88,7 +83,6 @@
   </div>
   } @else {
 
-  <!-- Tabela -->
   <div class="card">
     <div class="card-body p-0">
       @if (faturamentosFiltrados().length === 0) {
@@ -147,7 +141,6 @@
         </table>
       </div>
 
-      <!-- Rodapé -->
       <div class="table-footer">
         <div class="d-flex justify-content-between align-items-center">
           <span class="text-muted">

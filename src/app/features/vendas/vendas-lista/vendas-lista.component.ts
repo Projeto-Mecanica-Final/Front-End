@@ -1,11 +1,32 @@
-import { Component, inject, OnInit, AfterViewInit, signal, ViewChild, ElementRef } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnInit,
+  AfterViewInit,
+  signal,
+  ViewChild,
+  ElementRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+  FormsModule,
+} from '@angular/forms';
 import { VendaService } from '../../../core/services/venda.service';
 import { ClienteService } from '../../../core/services/cliente.service';
 import { ProdutoService } from '../../../core/services/produto.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { Venda, VendaRequest, ItemVendaRequest, Cliente, Produto, FormaPagamento } from '../../../core/models';
+import {
+  Venda,
+  VendaRequest,
+  ItemVendaRequest,
+  Cliente,
+  Produto,
+  FormaPagamento,
+} from '../../../core/models';
 
 declare var bootstrap: any;
 
@@ -22,7 +43,7 @@ interface ItemVendaLocal {
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './vendas-lista.component.html',
-  styleUrls: ['./vendas-lista.component.scss']
+  styleUrls: ['./vendas-lista.component.scss'],
 })
 export class VendasListaComponent implements OnInit, AfterViewInit {
   private vendaService = inject(VendaService);
@@ -31,9 +52,9 @@ export class VendasListaComponent implements OnInit, AfterViewInit {
   private authService = inject(AuthService);
   private fb = inject(FormBuilder);
 
- 
   @ViewChild('vendaModal', { static: false }) vendaModalElement!: ElementRef;
-  @ViewChild('detalhesModal', { static: false }) detalhesModalElement!: ElementRef;
+  @ViewChild('detalhesModal', { static: false })
+  detalhesModalElement!: ElementRef;
 
   private vendaModalInstance: any;
   private detalhesModalInstance: any;
@@ -57,7 +78,7 @@ export class VendasListaComponent implements OnInit, AfterViewInit {
     { value: FormaPagamento.DINHEIRO, label: 'Dinheiro' },
     { value: FormaPagamento.CARTAO_CREDITO, label: 'Cartão de Crédito' },
     { value: FormaPagamento.CARTAO_DEBITO, label: 'Cartão de Débito' },
-    { value: FormaPagamento.PIX, label: 'PIX' }
+    { value: FormaPagamento.PIX, label: 'PIX' },
   ];
 
   vendaSelecionada = signal<Venda | null>(null);
@@ -68,25 +89,29 @@ export class VendasListaComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    
     try {
       if (this.vendaModalElement?.nativeElement) {
-        this.vendaModalInstance = new bootstrap.Modal(this.vendaModalElement.nativeElement);
+        this.vendaModalInstance = new bootstrap.Modal(
+          this.vendaModalElement.nativeElement
+        );
       }
       if (this.detalhesModalElement?.nativeElement) {
-        this.detalhesModalInstance = new bootstrap.Modal(this.detalhesModalElement.nativeElement);
+        this.detalhesModalInstance = new bootstrap.Modal(
+          this.detalhesModalElement.nativeElement
+        );
       }
     } catch (err) {
-      // caso bootstrap não esteja disponível no ambiente de testes, apenas logamos
-      // Em produção o bootstrap deve estar carregado (bundle ou CDN).
-      console.warn('Bootstrap modal init falhou (talvez não esteja carregado):', err);
+      console.warn(
+        'Bootstrap modal init falhou (talvez não esteja carregado):',
+        err
+      );
     }
   }
 
   inicializarForm(): void {
     this.vendaForm = this.fb.group({
       cdCliente: [''],
-      formaPagamento: ['', [Validators.required]]
+      formaPagamento: ['', [Validators.required]],
     });
   }
 
@@ -96,7 +121,7 @@ export class VendasListaComponent implements OnInit, AfterViewInit {
     Promise.all([
       this.carregarVendas(),
       this.carregarClientes(),
-      this.carregarProdutos()
+      this.carregarProdutos(),
     ]).finally(() => {
       this.isLoading.set(false);
     });
@@ -113,7 +138,7 @@ export class VendasListaComponent implements OnInit, AfterViewInit {
         error: (error) => {
           console.error('Erro ao carregar vendas:', error);
           resolve();
-        }
+        },
       });
     });
   }
@@ -125,7 +150,7 @@ export class VendasListaComponent implements OnInit, AfterViewInit {
           this.clientes.set(clientes);
           resolve();
         },
-        error: () => resolve()
+        error: () => resolve(),
       });
     });
   }
@@ -137,7 +162,7 @@ export class VendasListaComponent implements OnInit, AfterViewInit {
           this.produtos.set(produtos);
           resolve();
         },
-        error: () => resolve()
+        error: () => resolve(),
       });
     });
   }
@@ -150,7 +175,7 @@ export class VendasListaComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    const filtradas = this.vendas().filter(venda => {
+    const filtradas = this.vendas().filter((venda) => {
       const nomeCliente = venda.clienteModel?.nmCliente?.toLowerCase() || '';
       const nomeAtendente = venda.atendente?.nmUsuario?.toLowerCase() || '';
 
@@ -183,7 +208,7 @@ export class VendasListaComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    const produto = this.produtos().find(p => p.cdProduto === cdProduto);
+    const produto = this.produtos().find((p) => p.cdProduto === cdProduto);
 
     if (!produto) {
       alert('Produto não encontrado');
@@ -195,10 +220,12 @@ export class VendasListaComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    const itemExistente = this.itensVenda().find(i => i.cdProduto === cdProduto);
+    const itemExistente = this.itensVenda().find(
+      (i) => i.cdProduto === cdProduto
+    );
 
     if (itemExistente) {
-      const novosItens = this.itensVenda().map(item => {
+      const novosItens = this.itensVenda().map((item) => {
         if (item.cdProduto === cdProduto) {
           const novaQuantidade = item.quantidade + quantidade;
           if (produto.qtdEstoque < novaQuantidade) {
@@ -208,7 +235,7 @@ export class VendasListaComponent implements OnInit, AfterViewInit {
           return {
             ...item,
             quantidade: novaQuantidade,
-            vlTotal: novaQuantidade * item.vlUnitario
+            vlTotal: novaQuantidade * item.vlUnitario,
           };
         }
         return item;
@@ -220,28 +247,31 @@ export class VendasListaComponent implements OnInit, AfterViewInit {
         produto: produto,
         quantidade: quantidade,
         vlUnitario: produto.vlProduto,
-        vlTotal: quantidade * produto.vlProduto
+        vlTotal: quantidade * produto.vlProduto,
       };
       this.itensVenda.set([...this.itensVenda(), novoItem]);
     }
 
-   
     this.produtoSelecionado.set(null);
     this.quantidadeProduto.set(1);
   }
 
   removerProduto(cdProduto: number): void {
-    this.itensVenda.set(this.itensVenda().filter(i => i.cdProduto !== cdProduto));
+    this.itensVenda.set(
+      this.itensVenda().filter((i) => i.cdProduto !== cdProduto)
+    );
   }
 
   calcularTotal(): number {
     return this.itensVenda().reduce((total, item) => total + item.vlTotal, 0);
   }
 
-  
   calcularTotalVendas(): number {
     try {
-      return this.vendasFiltradas().reduce((acc, v) => acc + Number(v.vlTotal ?? 0), 0);
+      return this.vendasFiltradas().reduce(
+        (acc, v) => acc + Number(v.vlTotal ?? 0),
+        0
+      );
     } catch (err) {
       console.error('Erro ao calcular total de vendas:', err);
       return 0;
@@ -264,16 +294,16 @@ export class VendasListaComponent implements OnInit, AfterViewInit {
     const formValue = this.vendaForm.value;
     const usuarioLogado = this.authService.getCurrentUser();
 
-    const itens: ItemVendaRequest[] = this.itensVenda().map(item => ({
+    const itens: ItemVendaRequest[] = this.itensVenda().map((item) => ({
       cdProduto: item.cdProduto,
-      quantidade: item.quantidade
+      quantidade: item.quantidade,
     }));
 
     const dados: VendaRequest = {
       cdCliente: formValue.cdCliente || undefined,
       cdAtendente: usuarioLogado!.cdUsuario,
       formaPagamento: formValue.formaPagamento,
-      itens: itens
+      itens: itens,
     };
 
     this.vendaService.criar(dados).subscribe({
@@ -281,18 +311,17 @@ export class VendasListaComponent implements OnInit, AfterViewInit {
         this.isSubmitting.set(false);
         this.fecharModal();
 
-        Promise.all([
-          this.carregarVendas(),
-          this.carregarProdutos()
-        ]).then(() => {
-          alert('Venda realizada com sucesso!');
-        });
+        Promise.all([this.carregarVendas(), this.carregarProdutos()]).then(
+          () => {
+            alert('Venda realizada com sucesso!');
+          }
+        );
       },
       error: (error) => {
         console.error('Erro ao salvar venda:', error);
         this.isSubmitting.set(false);
         alert(error?.message || 'Erro ao salvar venda');
-      }
+      },
     });
   }
 
@@ -300,18 +329,18 @@ export class VendasListaComponent implements OnInit, AfterViewInit {
     if (valor === null || valor === undefined) return 'R$ 0,00';
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
-      currency: 'BRL'
+      currency: 'BRL',
     }).format(valor);
   }
 
   getFormaPagamentoLabel(forma: FormaPagamento): string {
-    const formaObj = this.formasPagamento.find(f => f.value === forma);
+    const formaObj = this.formasPagamento.find((f) => f.value === forma);
     return formaObj?.label || (forma as any);
   }
 
   getClienteNome(cdCliente?: number): string {
     if (!cdCliente) return 'Sem cliente';
-    const cliente = this.clientes().find(c => c.cdCliente === cdCliente);
+    const cliente = this.clientes().find((c) => c.cdCliente === cdCliente);
     return cliente?.nmCliente || 'Cliente não encontrado';
   }
 
@@ -369,11 +398,14 @@ export class VendasListaComponent implements OnInit, AfterViewInit {
 
   calcularTotalItens(venda: Venda): number {
     if (!venda.itens || !Array.isArray(venda.itens)) return 0;
-    return venda.itens.reduce((total: number, item: any) => total + (item.vlTotal || 0), 0);
+    return venda.itens.reduce(
+      (total: number, item: any) => total + (item.vlTotal || 0),
+      0
+    );
   }
 
   getNomeProduto(cdProduto: number): string {
-    const produto = this.produtos().find(p => p.cdProduto === cdProduto);
+    const produto = this.produtos().find((p) => p.cdProduto === cdProduto);
     return produto?.nmProduto || 'Produto não encontrado';
   }
 
@@ -390,15 +422,25 @@ ${venda.clienteModel?.nmCliente || 'Venda Avulsa'}
 ${venda.clienteModel?.cpf ? 'CPF: ' + venda.clienteModel.cpf : ''}
 
 
-${(venda.itens?.map((item: any) => `
+${
+  venda.itens
+    ?.map(
+      (item: any) => `
 ${this.getNomeProduto(item.cdProduto)}
 Qtd: ${item.quantidade} x ${this.formatarMoeda(item.vlUnitario || 0)}
 Subtotal: ${this.formatarMoeda(item.vlTotal || 0)}
-`).join('\n')) || 'Nenhum item'}
+`
+    )
+    .join('\n') || 'Nenhum item'
+}
 
 
 Total: ${this.formatarMoeda(venda.vlTotal || 0)}
-${(venda as any).desconto ? 'Desconto: ' + this.formatarMoeda((venda as any).desconto) : ''}
+${
+  (venda as any).desconto
+    ? 'Desconto: ' + this.formatarMoeda((venda as any).desconto)
+    : ''
+}
 
 Forma de Pagamento: ${this.getFormaPagamentoLabel(venda.formaPagamento)}
 
@@ -408,9 +450,13 @@ ${venda.atendente?.nmUsuario || '-'}
 
     const janelaImpressao = window.open('', '_blank');
     if (janelaImpressao) {
-      janelaImpressao.document.write('<html><head><title>Comprovante de Venda</title>');
+      janelaImpressao.document.write(
+        '<html><head><title>Comprovante de Venda</title>'
+      );
       janelaImpressao.document.write('<style>');
-      janelaImpressao.document.write('body { font-family: monospace; white-space: pre-wrap; padding: 20px; }');
+      janelaImpressao.document.write(
+        'body { font-family: monospace; white-space: pre-wrap; padding: 20px; }'
+      );
       janelaImpressao.document.write('</style></head><body>');
       janelaImpressao.document.write(conteudo);
       janelaImpressao.document.write('</body></html>');
@@ -418,7 +464,6 @@ ${venda.atendente?.nmUsuario || '-'}
       janelaImpressao.print();
     }
   }
-
 
   exportarRelatorio(): void {
     const vendas = this.vendasFiltradas();
@@ -430,7 +475,7 @@ ${venda.atendente?.nmUsuario || '-'}
 
     let csv = 'Data,Cliente,CPF,Atendente,Forma Pagamento,Total,Itens\n';
 
-    vendas.forEach(venda => {
+    vendas.forEach((venda) => {
       const linha = [
         this.formatarData(venda.dataVenda),
         venda.clienteModel?.nmCliente || 'Venda Avulsa',
@@ -438,7 +483,7 @@ ${venda.atendente?.nmUsuario || '-'}
         venda.atendente?.nmUsuario || '-',
         this.getFormaPagamentoLabel(venda.formaPagamento),
         (venda.vlTotal ?? 0).toString(),
-        this.contarItens(venda).toString()
+        this.contarItens(venda).toString(),
       ].join(',');
 
       csv += linha + '\n';
@@ -449,7 +494,10 @@ ${venda.atendente?.nmUsuario || '-'}
     const url = URL.createObjectURL(blob);
 
     link.setAttribute('href', url);
-    link.setAttribute('download', `vendas_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute(
+      'download',
+      `vendas_${new Date().toISOString().split('T')[0]}.csv`
+    );
     link.style.visibility = 'hidden';
 
     document.body.appendChild(link);
@@ -470,7 +518,7 @@ ${venda.atendente?.nmUsuario || '-'}
         console.error('Erro ao filtrar por período:', error);
         this.isLoading.set(false);
         alert('Erro ao filtrar vendas por período');
-      }
+      },
     });
   }
 }

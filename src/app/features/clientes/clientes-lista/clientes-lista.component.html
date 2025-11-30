@@ -1,5 +1,4 @@
 <div class="clientes-page">
-  <!-- Cabeçalho -->
   <div class="page-header">
     <div>
       <h2 class="text-body">
@@ -15,7 +14,6 @@
     </button>
   </div>
 
-  <!-- Barra de Pesquisa -->
   <div class="search-bar card">
     <div class="card-body">
       <div class="input-group">
@@ -33,7 +31,6 @@
     </div>
   </div>
 
-  <!-- Loading State -->
   @if (isLoading()) {
   <div class="text-center py-5">
     <div class="spinner-border text-primary" role="status">
@@ -42,7 +39,6 @@
     <p class="text-muted mt-2">Carregando clientes...</p>
   </div>
   } @else {
-  <!-- Tabela de Clientes -->
   <div class="card">
     <div class="card-body p-0">
       @if (clientesFiltrados().length === 0) {
@@ -95,7 +91,6 @@
         </table>
       </div>
 
-      <!-- Rodapé com Total -->
       <div class="table-footer">
         <span class="text-muted">
           Total: <strong>{{ clientesFiltrados().length }}</strong> cliente(s)
@@ -107,7 +102,6 @@
   }
 </div>
 
-<!-- Modal de Cliente -->
 <div class="modal fade" #clienteModal tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
@@ -149,7 +143,6 @@
               }
             </div>
 
-            <!-- CPF -->
             <div class="col-md-6">
               <label for="cpf" class="form-label text-body">
                 CPF <span class="text-danger">*</span>
@@ -171,7 +164,6 @@
               }
             </div>
 
-            <!-- Telefone -->
             <div class="col-md-6">
               <label for="telefone" class="form-label text-body">
                 Telefone <span class="text-danger">*</span>
@@ -193,7 +185,6 @@
               }
             </div>
 
-            <!-- Email -->
             <div class="col-md-12">
               <label for="email" class="form-label text-body">
                 Email <span class="text-danger">*</span>
@@ -213,7 +204,6 @@
               }
             </div>
 
-            <!-- Endereço -->
             <div class="col-md-12">
               <label for="endereco" class="form-label text-body"
                 >Endereço</label

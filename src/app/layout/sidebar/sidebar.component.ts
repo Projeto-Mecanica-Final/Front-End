@@ -83,7 +83,6 @@ export class SidebarComponent {
     },
   ];
 
-  // Filtra itens do menu baseado nas roles do usuário
   get visibleMenuItems(): MenuItem[] {
     return this.menuItems.filter((item) =>
       this.authService.hasAnyRole(item.roles)
