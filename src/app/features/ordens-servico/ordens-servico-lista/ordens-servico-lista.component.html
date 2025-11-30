@@ -1,0 +1,885 @@
+<!-- src/app/features/ordens-servico/ordens-servico-lista/ordens-servico-lista.component.html -->
+<div class="ordens-page">
+  <!-- Cabeçalho -->
+  <div class="page-header">
+    <div>
+      <h2>
+        <i class="bi bi-file-earmark-text me-2"></i>
+        Ordens de Serviço
+      </h2>
+      <p class="text-muted mb-0">
+        Gerenciamento de ordens de serviço e orçamentos
+      </p>
+    </div>
+
+    <button class="btn btn-primary" (click)="abrirModalNovo()">
+      <i class="bi bi-plus-circle me-2"></i>
+      Nova Ordem
+    </button>
+  </div>
+
+  <!-- Filtros de Status -->
+  <div class="filters-bar card">
+    <div class="card-body">
+      <!-- ✅ BARRA DE BUSCA -->
+      <div class="row g-3 mb-3">
+        <div class="col-12">
+          <div class="input-group">
+            <span class="input-group-text">
+              <i class="bi bi-search"></i>
+            </span>
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Buscar por cliente, veículo, mecânico, diagnóstico ou número da OS..."
+              [(ngModel)]="searchTerm"
+              (ngModelChange)="aplicarFiltro()"
+            />
+            @if (searchTerm) {
+            <button
+              class="btn btn-outline-secondary"
+              type="button"
+              (click)="searchTerm = ''; aplicarFiltro()"
+              title="Limpar busca"
+            >
+              <i class="bi bi-x-lg"></i>
+            </button>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Filtros de Status -->
+      <div class="status-filters">
+        @for (status of statusOptions; track status.value) {
+        <button
+          type="button"
+          class="btn btn-sm"
+          [class]="'btn-' + status.class"
+          [class.active]="filtroStatus() === status.value"
+          (click)="alterarFiltroStatus(status.value)"
+        >
+          {{ status.label }}
+        </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  @if (isLoading()) {
+  <div class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Carregando...</span>
+    </div>
+    <p class="text-muted mt-2">Carregando ordens...</p>
+  </div>
+  } @else {
+  <!-- Tabela de Ordens -->
+  <div class="card">
+    <div class="card-body">
+      @if (ordensFiltradas().length === 0) {
+      <div class="empty-state">
+        <i class="bi bi-inbox"></i>
+        <p>Nenhuma ordem encontrada</p>
+      </div>
+      } @else {
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th>Nº</th>
+              <th>DATA</th>
+              <th>CLIENTE</th>
+              <th>VEÍCULO</th>
+              <th>TIPO</th>
+              <th>STATUS</th>
+              <th>TOTAL</th>
+              <th class="text-center">AÇÕES</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (ordem of ordensFiltradas(); track ordem.cdOrdemServico) {
+            <tr>
+              <td>
+                <strong class="text-primary">
+                  @if (ordem.tipoOrdemOrcamento === 'ORCAMENTO') { #OC{{
+                    ordem.cdOrdemServico
+                  }}
+                  } @else { #OS{{ ordem.cdOrdemServico }}
+                  }
+                </strong>
+              </td>
+              <td class="text-body">
+                <small>{{ formatarDataHora(ordem.dataAbertura) }}</small>
+              </td>
+              <td class="text-body">{{ getClienteNome(ordem) }}</td>
+              <td>
+                <span class="placa">{{ ordem.placaVeiculo || "-" }}</span>
+                <br />
+                <small class="text-muted">{{
+                  ordem.modeloVeiculo || "-"
+                }}</small>
+              </td>
+              <!-- ✅ MELHORADO: Badge de tipo mais claro com ícone -->
+              <td>
+                @if (ordem.tipoOrdemOrcamento === 'ORCAMENTO') {
+                <span class="badge bg-warning text-dark">
+                  <i class="bi bi-file-text me-1"></i>
+                  OC
+                </span>
+                } @else {
+                <span class="badge bg-primary">
+                  <i class="bi bi-file-earmark-check me-1"></i>
+                  OS
+                </span>
+                }
+              </td>
+
+              <!-- ✅ STATUS: DIFERENTE PARA ORÇAMENTO E OS -->
+              <td>
+                @if (ordem.tipoOrdemOrcamento === 'ORCAMENTO') {
+                <!-- ✅ ORÇAMENTOS: Badge fixo sem dropdown -->
+                @if (!ordem.aprovado) {
+                <span class="badge bg-warning text-dark pulse-badge">
+                  <i class="bi bi-clock-history me-1"></i>
+                  Pendente
+                </span>
+                } @else {
+                <span class="badge bg-info">
+                  <i class="bi bi-check-circle me-1"></i>
+                  Aprovado
+                </span>
+                } } @else {
+                <!-- ✅ ORDENS DE SERVIÇO: Dropdown clicável -->
+                <div class="status-dropdown-container">
+                  <span
+                    class="badge status-clickable"
+                    [ngClass]="getStatusClass(ordem.status)"
+                    (click)="toggleDropdownStatus(ordem.cdOrdemServico, $event)"
+                    title="Clique para alterar o status"
+                  >
+                    {{ getStatusLabel(ordem.status) }}
+                    <i class="bi bi-chevron-down ms-1"></i>
+                  </span>
+
+                  @if (isDropdownAberto(ordem.cdOrdemServico)) {
+                  <div class="status-dropdown-menu">
+                    @for (statusOpt of statusDropdownOptions; track
+                    statusOpt.value) {
+                    <div
+                      class="status-dropdown-item"
+                      [class.active]="ordem.status === statusOpt.value"
+                      (click)="mudarStatus(ordem, statusOpt.value, $event)"
+                    >
+                      <i
+                        class="bi bi-{{ statusOpt.icon }} me-2"
+                        [class]="'text-' + statusOpt.class"
+                      ></i>
+                      <span>{{ statusOpt.label }}</span>
+                      @if (ordem.status === statusOpt.value) {
+                      <i class="bi bi-check2 ms-auto text-success"></i>
+                      }
+                    </div>
+                    }
+                  </div>
+                  }
+                </div>
+                }
+              </td>
+
+              <td>
+                <strong class="text-success">{{
+                  formatarMoeda(ordem.vlTotal)
+                }}</strong>
+              </td>
+              <td class="text-center">
+                <div class="btn-group btn-group-sm" role="group">
+                  <!-- ✅ ORÇAMENTO: Botão de Aprovar Verde e Destaque -->
+                  @if (ordem.tipoOrdemOrcamento === 'ORCAMENTO') { @if
+                  (!ordem.aprovado) {
+                  <button
+                    class="btn btn-success"
+                    (click)="abrirModalAprovar(ordem)"
+                    title="Aprovar Orçamento e Transformar em OS"
+                  >
+                    <i class="bi bi-check-circle me-1"></i>
+                    Aprovar
+                  </button>
+                  <button
+                    class="btn btn-outline-danger"
+                    (click)="excluirOrcamento(ordem)"
+                    title="Excluir Orçamento"
+                  >
+                    <i class="bi bi-trash"></i>
+                  </button>
+                  } @else {
+                  <span class="badge bg-success px-3 py-2">
+                    <i class="bi bi-check-circle me-1"></i>
+                    Aprovado
+                  </span>
+                  } }
+
+                  <!-- ✅ ORDEM DE SERVIÇO: Editar apenas se AGENDADO -->
+                  @if (ordem.tipoOrdemOrcamento === 'ORDEM_DE_SERVICO') { @if
+                  (ordem.status === 'AGENDADO') {
+                  <button
+                    class="btn btn-outline-info"
+                    (click)="abrirModalEditar(ordem)"
+                    title="Editar"
+                  >
+                    <i class="bi bi-pencil me-1"></i>
+                    Editar
+                  </button>
+                  } @else if (ordem.status === 'CONCLUIDO') {
+                  <span class="badge bg-success px-3 py-2">
+                    <i class="bi bi-check-circle-fill me-1"></i>
+                    Concluída
+                  </span>
+                  } @else if (ordem.status === 'CANCELADO') {
+                  <span class="badge bg-secondary px-3 py-2">
+                    <i class="bi bi-x-circle-fill me-1"></i>
+                    Cancelada
+                  </span>
+                  } @else if (ordem.status === 'EM_ANDAMENTO') {
+                  <span class="badge bg-primary px-3 py-2">
+                    <i class="bi bi-play-circle-fill me-1"></i>
+                    Em Execução
+                  </span>
+                  } }
+                </div>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Rodapé com Total -->
+      <div class="table-footer">
+        <span class="text-muted">
+          Total: <strong>{{ ordensFiltradas().length }}</strong> registro(s)
+        </span>
+      </div>
+      }
+    </div>
+  </div>
+  }
+</div>
+
+<div class="modal fade" #ordemModal tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-white">
+          <i class="bi bi-file-earmark-plus me-2"></i>
+          @if (ordemForm.get('tipoOrdemOrcamento')?.value === 'ORCAMENTO') {
+          Novo Orçamento } @else { Nova Ordem de Serviço }
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          (click)="fecharModal()"
+        ></button>
+      </div>
+
+      <form [formGroup]="ordemForm" (ngSubmit)="salvar()">
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-12">
+              <h6 class="section-title">
+                <i class="bi bi-info-circle me-2"></i>
+                Informações Básicas
+              </h6>
+            </div>
+
+            <div class="col-md-3">
+              <label for="tipoOrdemOrcamento" class="form-label text-body">
+                Tipo <span class="text-danger">*</span>
+              </label>
+              <select
+                class="form-select"
+                id="tipoOrdemOrcamento"
+                formControlName="tipoOrdemOrcamento"
+              >
+                @for (tipo of tiposServico; track tipo.value) {
+                <option [value]="tipo.value">{{ tipo.label }}</option>
+                }
+              </select>
+              <small class="text-muted">
+                @if (ordemForm.get('tipoOrdemOrcamento')?.value === 'ORCAMENTO')
+                {
+                <i class="bi bi-info-circle me-1"></i>
+                Orçamento pode ser aprovado depois } @else {
+                <i class="bi bi-check-circle me-1"></i>
+                Ordem de Serviço precisa de agendamento }
+              </small>
+            </div>
+
+            <div class="col-md-3">
+              <label for="cdCliente" class="form-label text-body">
+                Cliente <span class="text-danger">*</span>
+              </label>
+              <select
+                class="form-select"
+                id="cdCliente"
+                formControlName="cdCliente"
+              >
+                <option value="">Selecione o cliente</option>
+                @for (cliente of clientes(); track cliente.cdCliente) {
+                <option [value]="cliente.cdCliente">
+                  {{ cliente.nmCliente }}
+                </option>
+                }
+              </select>
+            </div>
+
+            <div class="col-md-3">
+              <label for="cdVeiculo" class="form-label text-body">
+                Veículo <span class="text-danger">*</span>
+              </label>
+              <select
+                class="form-select"
+                id="cdVeiculo"
+                formControlName="cdVeiculo"
+                [disabled]="!ordemForm.get('cdCliente')?.value"
+              >
+                <option value="">Selecione o veículo</option>
+                @for (veiculo of veiculosCliente(); track veiculo.cdVeiculo) {
+                <option [value]="veiculo.cdVeiculo">
+                  {{ veiculo.placa }} - {{ veiculo.modelo }}
+                </option>
+                }
+              </select>
+            </div>
+
+            <div class="col-md-3">
+              <label for="cdMecanico" class="form-label text-body">
+                Mecânico <span class="text-danger">*</span>
+              </label>
+              <select
+                class="form-select"
+                id="cdMecanico"
+                formControlName="cdMecanico"
+              >
+                <option value="">Selecione o mecânico</option>
+                @for (mecanico of mecanicos(); track mecanico.cdUsuario) {
+                <option [value]="mecanico.cdUsuario">
+                  {{ mecanico.nmUsuario }}
+                </option>
+                }
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <label for="dataAgendamento" class="form-label text-body">
+                Data de Agendamento @if
+                (ordemForm.get('tipoOrdemOrcamento')?.value ===
+                'ORDEM_DE_SERVICO') {
+                <span class="text-danger">*</span>
+                }
+              </label>
+              <input
+                type="date"
+                class="form-control"
+                id="dataAgendamento"
+                formControlName="dataAgendamento"
+              />
+              <small class="text-muted">
+                @if (ordemForm.get('tipoOrdemOrcamento')?.value === 'ORCAMENTO')
+                { Opcional para orçamento } @else { Obrigatório para ordem de
+                serviço }
+              </small>
+            </div>
+
+            <!-- Produtos -->
+            <div class="col-12 mt-4">
+              <h6 class="section-title">
+                <i class="bi bi-box-seam me-2"></i>
+                Produtos
+              </h6>
+            </div>
+
+            <div class="col-12">
+              <div class="card bg-body">
+                <div class="card-body">
+                  <div class="row g-2">
+                    <div class="col-md-6">
+                      <select
+                        class="form-select"
+                        [(ngModel)]="produtoSelecionado"
+                        [ngModelOptions]="{ standalone: true }"
+                      >
+                        <option [ngValue]="null">Selecione um produto</option>
+                        @for (produto of produtos(); track produto.cdProduto) {
+                        <option [ngValue]="produto.cdProduto">
+                          {{ produto.nmProduto }} -
+                          {{ formatarMoeda(produto.vlProduto) }} (Est:
+                          {{ produto.qtdEstoque }})
+                        </option>
+                        }
+                      </select>
+                    </div>
+                    <div class="col-md-3">
+                      <input
+                        type="number"
+                        class="form-control"
+                        placeholder="Quantidade"
+                        min="1"
+                        [(ngModel)]="quantidadeProduto"
+                        [ngModelOptions]="{ standalone: true }"
+                      />
+                    </div>
+                    <div class="col-md-3">
+                      <button
+                        type="button"
+                        class="btn btn-success w-100"
+                        (click)="adicionarProduto()"
+                      >
+                        <i class="bi bi-plus-circle me-1"></i>
+                        Adicionar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Serviços -->
+            <div class="col-12 mt-3">
+              <h6 class="section-title">
+                <i class="bi bi-tools me-2"></i>
+                Serviços
+              </h6>
+            </div>
+
+            <div class="col-12">
+              <div class="card bg-body">
+                <div class="card-body">
+                  <div class="row g-2">
+                    <div class="col-md-9">
+                      <select
+                        class="form-select"
+                        [(ngModel)]="servicoSelecionado"
+                        [ngModelOptions]="{ standalone: true }"
+                      >
+                        <option [ngValue]="null">Selecione um serviço</option>
+                        @for (servico of servicos(); track servico.cdServico) {
+                        <option [ngValue]="servico.cdServico">
+                          {{ servico.nmServico }} -
+                          {{ formatarMoeda(servico.vlServico) }}
+                        </option>
+                        }
+                      </select>
+                    </div>
+                    <div class="col-md-3">
+                      <button
+                        type="button"
+                        class="btn btn-success w-100"
+                        (click)="adicionarServico()"
+                      >
+                        <i class="bi bi-plus-circle me-1"></i>
+                        Adicionar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Itens Adicionados -->
+            <div class="col-12 mt-3">
+              @if (itens().length > 0) {
+              <div class="table-responsive">
+                <table class="table table-sm">
+                  <thead>
+                    <tr>
+                      <th>Tipo</th>
+                      <th>Item</th>
+                      <th>Preço Unit.</th>
+                      <th>Qtd</th>
+                      <th>Subtotal</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (item of itens(); track item.codigo + item.tipo) {
+                    <tr>
+                      <td>
+                        @if (item.tipo === 'produto') {
+                        <span class="badge bg-info">Produto</span>
+                        } @else {
+                        <span class="badge bg-primary">Serviço</span>
+                        }
+                      </td>
+                      <td class="text-body">{{ item.nome }}</td>
+                      <td class="text-body">
+                        {{ formatarMoeda(item.vlUnitario) }}
+                      </td>
+                      <td class="text-body">{{ item.quantidade }}</td>
+                      <td class="text-body">
+                        <strong>{{ formatarMoeda(item.vlTotal) }}</strong>
+                      </td>
+                      <td class="text-end">
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-outline-danger"
+                          (click)="removerItem(item.tipo, item.codigo)"
+                          title="Remover"
+                        >
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    }
+                    <!-- ✅ MÃO DE OBRA EXTRA - CORRIGIDO -->
+                    <tr class="table-warning">
+                      <td colspan="2"><strong>Mão de Obra Extra</strong></td>
+                      <td colspan="3">
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text">R$</span>
+                          <input
+                            type="number"
+                            class="form-control"
+                            [value]="
+                              ordemForm.get('vlMaoObraExtra')?.value || 0
+                            "
+                            (input)="atualizarMaoObra($event)"
+                            min="0"
+                            step="0.01"
+                            placeholder="0,00"
+                          />
+                        </div>
+                      </td>
+                      <td></td>
+                    </tr>
+                  </tbody>
+                  <tfoot>
+                    <tr class="table-primary">
+                      <th colspan="4" class="text-end">TOTAL:</th>
+                      <th colspan="2">
+                        <h5 class="mb-0 text-success">
+                          {{ formatarMoeda(calcularTotal()) }}
+                        </h5>
+                      </th>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+              } @else {
+              <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                Adicione produtos e/ou serviços
+              </div>
+              }
+            </div>
+
+            <!-- Diagnóstico -->
+            <div class="col-12 mt-3">
+              <label for="diagnostico" class="form-label text-body"
+                >Diagnóstico</label
+              >
+              <textarea
+                class="form-control"
+                id="diagnostico"
+                formControlName="diagnostico"
+                rows="2"
+                placeholder="Diagnóstico inicial do veículo..."
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="fecharModal()"
+            [disabled]="isSubmitting()"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="isSubmitting() || itens().length === 0"
+          >
+            @if (isSubmitting()) {
+            <span class="spinner-border spinner-border-sm me-2"></span>
+            Salvando... } @else {
+            <i class="bi bi-check-circle me-2"></i>
+            @if (ordemForm.get('tipoOrdemOrcamento')?.value === 'ORCAMENTO') {
+            Criar Orçamento } @else { Criar Ordem } }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- ✅ MODAL DE APROVAÇÃO DE ORÇAMENTO -->
+<!-- ========================================== -->
+<div class="modal fade" #aprovarModal tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title">
+          <i class="bi bi-check-circle me-2"></i>
+          Aprovar Orçamento
+        </h5>
+        <button
+          type="button"
+          class="btn-close btn-close-white"
+          (click)="aprovarModalInstance?.hide()"
+        ></button>
+      </div>
+
+      <form [formGroup]="aprovarForm" (ngSubmit)="aprovarOrcamento()">
+        <div class="modal-body">
+          @if (ordemParaAprovar(); as ordem) {
+          <div class="alert alert-info mb-3">
+            <h6 class="alert-heading">
+              <i class="bi bi-file-text me-2"></i>
+              Orçamento #OC{{ ordem.cdOrdemServico }}
+            </h6>
+            <hr />
+            <p class="mb-1"><strong>Cliente:</strong> {{ ordem.nmCliente }}</p>
+            <p class="mb-1">
+              <strong>Veículo:</strong> {{ ordem.placaVeiculo }} -
+              {{ ordem.modeloVeiculo }}
+            </p>
+            <p class="mb-0">
+              <strong>Total:</strong>
+              <span class="text-success fw-bold">{{
+                formatarMoeda(ordem.vlTotal)
+              }}</span>
+            </p>
+          </div>
+          }
+
+          <div class="alert alert-warning">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>O que acontecerá ao aprovar:</strong>
+            <ul class="mb-0 mt-2">
+              <li>
+                Orçamento será transformado em <strong>Ordem de Serviço</strong>
+              </li>
+              <li>
+                Um <strong>agendamento</strong> será criado automaticamente
+              </li>
+              <li>Status será alterado para <strong>AGENDADO</strong></li>
+              <li>Orçamento ficará marcado como <strong>aprovado</strong></li>
+            </ul>
+          </div>
+
+          <div class="mb-3">
+            <label for="dataAgendamentoAprovar" class="form-label text-body">
+              Data de Agendamento <span class="text-danger">*</span>
+            </label>
+            <input
+              type="date"
+              class="form-control form-control-lg"
+              id="dataAgendamentoAprovar"
+              formControlName="dataAgendamento"
+            />
+            <small class="text-muted">
+              <i class="bi bi-calendar-event me-1"></i>
+              Selecione a data para realizar o serviço
+            </small>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="aprovarModalInstance?.hide()"
+            [disabled]="isSubmitting()"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="btn btn-success btn-lg"
+            [disabled]="isSubmitting() || aprovarForm.invalid"
+          >
+            @if (isSubmitting()) {
+            <span class="spinner-border spinner-border-sm me-2"></span>
+            Aprovando... } @else {
+            <i class="bi bi-check-circle me-2"></i>
+            Aprovar e Criar OS }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MODAL DE EDIÇÃO -->
+<!-- ========================================== -->
+<div class="modal fade" #editarModal tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-pencil me-2"></i>
+          Editar Ordem de Serviço
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          (click)="editarModalInstance?.hide()"
+        ></button>
+      </div>
+
+      <form [formGroup]="editarForm" (ngSubmit)="salvarEdicao()">
+        <div class="modal-body">
+          @if (ordemParaEditar()) {
+          <div class="alert alert-info mb-3">
+            <strong>OS #{{ ordemParaEditar()?.cdOrdemServico }}</strong
+            ><br />
+            <strong>Cliente:</strong> {{ ordemParaEditar()?.nmCliente }}<br />
+            <strong>Veículo:</strong> {{ ordemParaEditar()?.placaVeiculo
+            }}<br />
+            <strong>Status:</strong>
+            {{ getStatusLabel(ordemParaEditar()!.status) }}
+          </div>
+          }
+
+          <div class="mb-3">
+            <label for="editVlMaoObraExtra" class="form-label text-body">
+              Mão de Obra Extra (R$)
+            </label>
+            <div class="input-group">
+              <span class="input-group-text">R$</span>
+              <input
+                type="number"
+                class="form-control"
+                id="editVlMaoObraExtra"
+                formControlName="vlMaoObraExtra"
+                min="0"
+                step="0.01"
+              />
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="editDiagnostico" class="form-label text-body"
+              >Diagnóstico</label
+            >
+            <textarea
+              class="form-control"
+              id="editDiagnostico"
+              formControlName="diagnostico"
+              rows="3"
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="editarModalInstance?.hide()"
+            [disabled]="isSubmitting()"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="isSubmitting()"
+          >
+            @if (isSubmitting()) {
+            <span class="spinner-border spinner-border-sm me-2"></span>
+            Salvando... } @else {
+            <i class="bi bi-check-circle me-2"></i>
+            Salvar }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" #concluirModal tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title">
+          <i class="bi bi-check-circle me-2"></i>
+          Concluir Ordem de Serviço
+        </h5>
+        <button
+          type="button"
+          class="btn-close btn-close-white"
+          (click)="concluirModalInstance?.hide()"
+        ></button>
+      </div>
+
+      <form [formGroup]="concluirForm" (ngSubmit)="concluirOrdem()">
+        <div class="modal-body">
+          @if (ordemParaConcluir(); as ordem) {
+          <div class="alert alert-info">
+            <strong>OS #{{ ordem.cdOrdemServico }}</strong
+            ><br />
+            <strong>Cliente:</strong> {{ ordem.nmCliente }}<br />
+            <strong>Veículo:</strong> {{ ordem.placaVeiculo }}<br />
+            <strong>Total:</strong>
+            <span class="text-success fw-bold">{{
+              formatarMoeda(ordem.vlTotal)
+            }}</span>
+          </div>
+          }
+
+          <div class="mb-3">
+            <label for="formaPagamento" class="form-label text-body">
+              Forma de Pagamento <span class="text-danger">*</span>
+            </label>
+            <select
+              class="form-select form-select-lg"
+              id="formaPagamento"
+              formControlName="formaPagamento"
+              required
+            >
+              <option value="">Selecione a forma de pagamento</option>
+              @for (forma of formasPagamento; track forma.value) {
+              <option [value]="forma.value">{{ forma.label }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="alert alert-warning">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>Atenção:</strong> Ao concluir, o faturamento será gerado
+            automaticamente e não poderá ser desfeito.
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="concluirModalInstance?.hide()"
+            [disabled]="isSubmitting()"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="btn btn-success"
+            [disabled]="isSubmitting() || concluirForm.invalid"
+          >
+            @if (isSubmitting()) {
+            <span class="spinner-border spinner-border-sm me-2"></span>
+            Concluindo... } @else {
+            <i class="bi bi-check-circle me-2"></i>
+            Concluir e Faturar }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

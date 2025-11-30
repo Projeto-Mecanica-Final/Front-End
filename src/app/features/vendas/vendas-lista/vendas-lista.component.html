@@ -1,0 +1,586 @@
+<div class="vendas-page">
+  <div class="page-header">
+    <div>
+      <h2>
+        <i class="bi bi-cart-check me-2"></i>
+        Vendas
+      </h2>
+      <p class="text-muted mb-0">Gerenciamento de vendas e faturamento</p>
+    </div>
+
+    <button class="btn btn-primary" (click)="abrirModalNovo()">
+      <i class="bi bi-plus-circle me-2"></i>
+      Nova Venda
+    </button>
+  </div>
+
+  <div class="search-bar card">
+    <div class="card-body">
+      <div class="input-group">
+        <span class="input-group-text">
+          <i class="bi bi-search"></i>
+        </span>
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Buscar por cliente ou atendente..."
+          [ngModel]="searchTerm()"
+          (ngModelChange)="searchTerm.set($event); aplicarFiltro()"
+        />
+        @if (searchTerm()) {
+        <button
+          class="btn btn-outline-secondary"
+          type="button"
+          (click)="searchTerm.set(''); aplicarFiltro()"
+          title="Limpar busca"
+        >
+          <i class="bi bi-x-lg"></i>
+        </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+  <div class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Carregando...</span>
+    </div>
+    <p class="text-muted mt-2">Carregando vendas...</p>
+  </div>
+  } @else {
+
+  <div class="card">
+    <div class="card-body">
+      @if (vendasFiltradas().length === 0) {
+      <div class="empty-state">
+        <i class="bi bi-inbox"></i>
+        <p>Nenhuma venda encontrada</p>
+      </div>
+      } @else {
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th class="text-light">DATA/HORA</th>
+              <th class="text-light">CLIENTE</th>
+              <th class="text-light">ATENDENTE</th>
+              <th class="text-light">ITENS</th>
+              <th class="text-light">PAGAMENTO</th>
+              <th class="text-light">TOTAL</th>
+              <th class="text-center text-light">AÇÕES</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (venda of vendasFiltradas(); track venda.cdVenda) {
+            <tr>
+              <td class="text-body">
+                <small>{{ formatarData(venda.dataVenda) }}</small>
+              </td>
+              <td class="text-body">
+                <strong>{{
+                  venda.clienteModel?.nmCliente || "Venda Avulsa"
+                }}</strong>
+                @if (venda.clienteModel?.cpf) {
+                <br />
+                <small class="text-muted"
+                  >CPF: {{ venda.clienteModel?.cpf }}</small
+                >
+                }
+              </td>
+              <td class="text-body">
+                <small class="text-muted">
+                  <i class="bi bi-person-circle me-1"></i>
+                  {{ venda.atendente?.nmUsuario || "-" }}
+                </small>
+              </td>
+              <td class="text-body">
+                <span class="badge bg-info">
+                  <i class="bi bi-box-seam me-1"></i>
+                  {{ contarItens(venda) }} produto(s)
+                </span>
+              </td>
+              <td class="text-body">
+                @if (venda.formaPagamento === 'DINHEIRO') {
+                <span class="badge bg-success">
+                  <i class="bi bi-cash me-1"></i>
+                  Dinheiro
+                </span>
+                } @else if (venda.formaPagamento === 'PIX') {
+                <span class="badge bg-primary">
+                  <i class="bi bi-phone me-1"></i>
+                  PIX
+                </span>
+                } @else if (venda.formaPagamento === 'CARTAO_CREDITO') {
+                <span class="badge bg-warning text-dark">
+                  <i class="bi bi-credit-card me-1"></i>
+                  Crédito
+                </span>
+                } @else if (venda.formaPagamento === 'CARTAO_DEBITO') {
+                <span class="badge bg-info">
+                  <i class="bi bi-credit-card-2-front me-1"></i>
+                  Débito
+                </span>
+                }
+              </td>
+              <td class="text-body">
+                <strong class="text-success fs-5">{{
+                  formatarMoeda(venda.vlTotal)
+                }}</strong>
+              </td>
+              <td class="text-center">
+                <button
+                  class="btn btn-sm btn-outline-primary"
+                  title="Ver Detalhes"
+                  (click)="abrirDetalhes(venda)"
+                >
+                  <i class="bi bi-eye"></i>
+                </button>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-footer bg-body">
+        <div class="row align-items-center">
+          <div class="col-md-6">
+            <span class="text-muted">
+              Total: <strong>{{ vendasFiltradas().length }}</strong> venda(s)
+            </span>
+          </div>
+          <div class="col-md-6 text-md-end">
+            <span class="text-muted me-2">Faturamento Total:</span>
+            <strong class="text-success fs-5">
+              {{ formatarMoeda(calcularTotalVendas()) }}
+            </strong>
+          </div>
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+  }
+</div>
+
+<div class="modal fade" #vendaModal tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title text-white">
+          <i class="bi bi-cart-plus me-2"></i>
+          Nova Venda
+        </h5>
+        <button
+          type="button"
+          class="btn-close btn-close-white"
+          (click)="fecharModal()"
+        ></button>
+      </div>
+
+      <form [formGroup]="vendaForm" (ngSubmit)="salvar()">
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-12">
+              <h6 class="section-title text-muted">
+                <i class="bi bi-info-circle me-2"></i>
+                Informações da Venda
+              </h6>
+            </div>
+
+            <div class="col-md-6">
+              <label for="cdCliente" class="form-label text-body">
+                Cliente
+              </label>
+              <select
+                class="form-select"
+                id="cdCliente"
+                formControlName="cdCliente"
+              >
+                <option value="">Venda Avulsa (Sem Cliente)</option>
+                @for (cliente of clientes(); track cliente.cdCliente) {
+                <option [value]="cliente.cdCliente">
+                  {{ cliente.nmCliente }}
+                  @if (cliente.cpf) { - CPF: {{ cliente.cpf }}
+                  }
+                </option>
+                }
+              </select>
+              <small class="text-muted">
+                <i class="bi bi-info-circle me-1"></i>
+                Opcional - deixe em branco para venda avulsa
+              </small>
+            </div>
+
+            <div class="col-md-6">
+              <label for="formaPagamento" class="form-label text-body">
+                Forma de Pagamento <span class="text-danger">*</span>
+              </label>
+              <select
+                class="form-select"
+                id="formaPagamento"
+                formControlName="formaPagamento"
+              >
+                <option value="">Selecione a forma de pagamento</option>
+                @for (forma of formasPagamento; track forma.value) {
+                <option [value]="forma.value">{{ forma.label }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="col-12 mt-4">
+              <h6 class="section-title">
+                <i class="bi bi-box-seam me-2"></i>
+                Produtos
+              </h6>
+            </div>
+
+            <div class="col-12">
+              <div class="card bg-body">
+                <div class="card-body">
+                  <div class="row g-2">
+                    <div class="col-md-6">
+                      <select
+                        class="form-select"
+                        [(ngModel)]="produtoSelecionado"
+                        [ngModelOptions]="{ standalone: true }"
+                      >
+                        <option [ngValue]="null">Selecione um produto</option>
+                        @for (produto of produtos(); track produto.cdProduto) {
+                        <option [ngValue]="produto.cdProduto">
+                          {{ produto.nmProduto }} -
+                          {{ formatarMoeda(produto.vlProduto) }} (Est:
+                          {{ produto.qtdEstoque }})
+                        </option>
+                        }
+                      </select>
+                    </div>
+                    <div class="col-md-3">
+                      <input
+                        type="number"
+                        class="form-control"
+                        placeholder="Quantidade"
+                        min="1"
+                        [(ngModel)]="quantidadeProduto"
+                        [ngModelOptions]="{ standalone: true }"
+                      />
+                    </div>
+                    <div class="col-md-3">
+                      <button
+                        type="button"
+                        class="btn btn-success w-100"
+                        (click)="adicionarProduto()"
+                      >
+                        <i class="bi bi-plus-circle me-1"></i>
+                        Adicionar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12 mt-3">
+              @if (itensVenda().length > 0) {
+              <div class="table-responsive">
+                <table class="table table-sm">
+                  <thead>
+                    <tr>
+                      <th class="text-light">Produto</th>
+                      <th class="text-light">Preço Unit.</th>
+                      <th class="text-light">Qtd</th>
+                      <th class="text-light">Subtotal</th>
+                      <th class="text-light"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (item of itensVenda(); track item.cdProduto) {
+                    <tr>
+                      <td class="text-body">
+                        <strong>{{ item.produto.nmProduto }}</strong>
+                        @if (item.produto.dsProduto) {
+                        <br />
+                        <small class="text-muted">{{
+                          item.produto.dsProduto
+                        }}</small>
+                        }
+                      </td>
+                      <td class="text-body">
+                        {{ formatarMoeda(item.vlUnitario) }}
+                      </td>
+                      <td class="text-body">
+                        <span class="badge bg-secondary">{{
+                          item.quantidade
+                        }}</span>
+                      </td>
+                      <td class="text-body">
+                        <strong class="text-success">{{
+                          formatarMoeda(item.vlTotal)
+                        }}</strong>
+                      </td>
+                      <td class="text-end">
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-outline-danger"
+                          (click)="removerProduto(item.cdProduto)"
+                          title="Remover"
+                        >
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    }
+                  </tbody>
+                  <tfoot>
+                    <tr class="table-success">
+                      <th colspan="3" class="text-end">TOTAL:</th>
+                      <th colspan="2">
+                        <h5 class="mb-0 text-success">
+                          {{ formatarMoeda(calcularTotal()) }}
+                        </h5>
+                      </th>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+              } @else {
+              <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                Adicione produtos à venda
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="fecharModal()"
+            [disabled]="isSubmitting()"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary btn-lg"
+            [disabled]="
+              isSubmitting() || itensVenda().length === 0 || vendaForm.invalid
+            "
+          >
+            @if (isSubmitting()) {
+            <span class="spinner-border spinner-border-sm me-2"></span>
+            Processando... } @else {
+            <i class="bi bi-check-circle me-2"></i>
+            Finalizar Venda - {{ formatarMoeda(calcularTotal()) }}
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" #detalhesModal tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">
+          <i class="bi bi-receipt me-2"></i>
+          Detalhes da Venda
+        </h5>
+        <button
+          type="button"
+          class="btn-close btn-close-white"
+          (click)="fecharDetalhes()"
+        ></button>
+      </div>
+
+      <div class="modal-body">
+        @if (vendaSelecionada(); as venda) {
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <div class="info-card">
+              <label class="info-label text-body">
+                <i class="bi bi-hash me-2"></i>
+                Número da Venda
+              </label>
+              <div class="info-value text-muted">
+                <strong class="text-primary">#{{ venda.cdVenda }}</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="info-card">
+              <label class="info-label text-body">
+                <i class="bi bi-calendar-event me-2"></i>
+                Data/Hora
+              </label>
+              <div class="info-value text-muted">
+                {{ formatarData(venda.dataVenda) }}
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="info-card">
+              <label class="info-label text-body">
+                <i class="bi bi-person-circle me-2"></i>
+                Cliente
+              </label>
+              <div class="info-value text-muted">
+                {{ venda.clienteModel?.nmCliente || "Venda Avulsa" }}
+                @if (venda.clienteModel?.cpf) {
+                <br />
+                <small class="text-muted"
+                  >CPF: {{ venda.clienteModel?.cpf }}</small
+                >
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="info-card">
+              <label class="info-label text-body">
+                <i class="bi bi-person-badge me-2"></i>
+                Atendente
+              </label>
+              <div class="info-value text-muted">
+                {{ venda.atendente?.nmUsuario || "-" }}
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="info-card">
+              <label class="info-label text-body">
+                <i class="bi bi-credit-card me-2"></i>
+                Forma de Pagamento
+              </label>
+              <div class="info-value text-muted">
+                @if (venda.formaPagamento === 'DINHEIRO') {
+                <span class="badge bg-success">
+                  <i class="bi bi-cash me-1"></i>
+                  Dinheiro
+                </span>
+                } @else if (venda.formaPagamento === 'PIX') {
+                <span class="badge bg-primary">
+                  <i class="bi bi-phone me-1"></i>
+                  PIX
+                </span>
+                } @else if (venda.formaPagamento === 'CARTAO_CREDITO') {
+                <span class="badge bg-warning text-dark">
+                  <i class="bi bi-credit-card me-1"></i>
+                  Crédito
+                </span>
+                } @else if (venda.formaPagamento === 'CARTAO_DEBITO') {
+                <span class="badge bg-info">
+                  <i class="bi bi-credit-card-2-front me-1"></i>
+                  Débito
+                </span>
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="info-card">
+              <label class="info-label text-body">
+                <i class="bi bi-cash-stack me-2"></i>
+                Valor Total
+              </label>
+              <div class="info-value text-muted">
+                <strong class="text-success fs-4">{{
+                  formatarMoeda(venda.vlTotal)
+                }}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <h6 class="section-title">
+            <i class="bi bi-box-seam me-2"></i>
+            Produtos Vendidos
+          </h6>
+
+          @if (venda.itens && venda.itens.length > 0) {
+          <div class="table-responsive">
+            <table class="table table-sm table-hover">
+              <thead>
+                <tr>
+                  <th class="text-light">Produto</th>
+                  <th class="text-center text-light">Qtd</th>
+                  <th class="text-end text-light">Preço Unit.</th>
+                  <th class="text-end text-light">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of venda.itens; track item.cdItemVenda) {
+                <tr>
+                  <td class="text-body">
+                    <strong>{{
+                      item.produto?.nmProduto || getNomeProduto(item.cdProduto)
+                    }}</strong>
+                  </td>
+                  <td class="text-center">
+                    <span class="badge bg-secondary">{{
+                      item.quantidade
+                    }}</span>
+                  </td>
+                  <td class="text-end">{{ formatarMoeda(item.vlUnitario) }}</td>
+                  <td class="text-end">
+                    <strong class="text-success">{{
+                      formatarMoeda(item.vlTotal)
+                    }}</strong>
+                  </td>
+                </tr>
+                }
+              </tbody>
+              <tfoot>
+                <tr class="table-success">
+                  <th colspan="3" class="text-end">TOTAL:</th>
+                  <th class="text-end">
+                    <strong class="text-success fs-5">{{
+                      formatarMoeda(venda.vlTotal)
+                    }}</strong>
+                  </th>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+          } @else {
+          <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            Nenhum item encontrado nesta venda
+          </div>
+          }
+        </div>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="fecharDetalhes()"
+        >
+          <i class="bi bi-x-circle me-2"></i>
+          Fechar
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="imprimirComprovante(vendaSelecionada()!)"
+        >
+          <i class="bi bi-printer me-2"></i>
+          Imprimir Comprovante
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

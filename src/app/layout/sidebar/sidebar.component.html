@@ -1,0 +1,44 @@
+<div
+  class="offcanvas offcanvas-start sidebar"
+  tabindex="-1"
+  id="sidebarOffcanvas"
+>
+  <!-- Header da sidebar -->
+  <div class="offcanvas-header border-bottom border-light">
+    <div>
+      <h4 class="mb-0 text-body">
+        <i class="bi bi-wrench-adjustable me-2"></i>
+        <span class="text-body">SGM</span>
+      </h4>
+      <p class="sidebar-subtitle mb-0">GESTÃO MECÂNICA</p>
+    </div>
+
+    <button
+      type="button"
+      class="btn-close text-reset"
+      data-bs-dismiss="offcanvas"
+    ></button>
+  </div>
+
+  <div class="offcanvas-body p-0">
+    <nav class="sidebar-nav">
+      <ul class="nav flex-column">
+        @for (item of visibleMenuItems; track item.route) {
+
+        <li class="nav-item">
+          <a
+            class="nav-link d-flex align-items-center gap-2 px-3 py-2"
+            [routerLink]="item.route"
+            routerLinkActive="active"
+            data-bs-dismiss="offcanvas"
+          >
+            <i class="bi" [ngClass]="item.icon"></i>
+            <span>{{ item.label }}</span>
+          </a>
+        </li>
+
+        }
+      </ul>
+    </nav>
+  </div>
+</div>

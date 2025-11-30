@@ -1,0 +1,354 @@
+<div class="usuarios-page">
+  <!-- Cabeçalho -->
+  <div class="page-header">
+    <div>
+      <h2>
+        <i class="bi bi-people-fill me-2"></i>
+        Usuários
+      </h2>
+      <p class="text-muted mb-0">Gerenciamento de usuários do sistema</p>
+    </div>
+
+    <button class="btn btn-primary" (click)="abrirModalNovo()">
+      <i class="bi bi-plus-circle me-2"></i>
+      Novo Usuário
+    </button>
+  </div>
+
+  <div class="search-bar card">
+    <div class="card-body">
+      <div class="input-group">
+        <span class="input-group-text bg-body">
+          <i class="bi bi-search"></i>
+        </span>
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Buscar por nome ou email..."
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="aplicarFiltro()"
+        />
+      </div>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+  <div class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Carregando...</span>
+    </div>
+    <p class="text-muted mt-2">Carregando usuários...</p>
+  </div>
+  } @else {
+
+  <div class="card">
+    <div class="card-body p-0">
+      @if (usuariosFiltrados().length === 0) {
+      <div class="empty-state">
+        <i class="bi bi-inbox"></i>
+        <p>Nenhum usuário encontrado</p>
+      </div>
+      } @else {
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Email</th>
+              <th>Perfil</th>
+              <th>Autenticação</th>
+              <th>Cadastro</th>
+              <th class="text-center">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (usuario of usuariosFiltrados(); track usuario.cdUsuario) {
+            <tr>
+              <td class="text-body">
+                <strong>{{ usuario.nmUsuario }}</strong>
+              </td>
+              <td class="text-body">{{ usuario.email }}</td>
+              <td class="text-body">
+                <span class="badge bg-info">
+                  {{ getRolesLabel(usuario.roles) }}
+                </span>
+              </td>
+              <td class="text-body">
+                <span
+                  class="badge"
+                  [ngClass]="getProviderBadgeClass(usuario.provider)"
+                >
+                  <i
+                    class="bi"
+                    [ngClass]="
+                      usuario.provider === 'GOOGLE'
+                        ? 'bi-google'
+                        : 'bi-shield-lock'
+                    "
+                  ></i>
+                  {{ getProviderLabel(usuario.provider) }}
+                </span>
+              </td>
+              <td class="text-body">
+                <small class="text-muted">-</small>
+              </td>
+              <td class="text-center">
+                <div class="btn-group btn-group-sm">
+                  <button
+                    class="btn btn-outline-primary"
+                    (click)="abrirModalEditar(usuario)"
+                    title="Editar"
+                  >
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button
+                    class="btn btn-outline-danger"
+                    (click)="confirmarExclusao(usuario)"
+                    title="Excluir"
+                  >
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-footer">
+        <span class="text-muted">
+          Total: <strong>{{ usuariosFiltrados().length }}</strong> usuário(s)
+        </span>
+      </div>
+      }
+    </div>
+  </div>
+  }
+</div>
+
+<div class="modal fade" #usuarioModal tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-white">
+          @if (modoEdicao()) {
+          <i class="bi bi-pencil me-2"></i>
+          Editar Usuário } @else {
+          <i class="bi bi-plus-circle me-2"></i>
+          Novo Usuário }
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          (click)="fecharModal()"
+        ></button>
+      </div>
+
+      <form [formGroup]="usuarioForm" (ngSubmit)="salvar()">
+        <div class="modal-body">
+          <div class="row g-3">
+            <!-- Nome -->
+            <div class="col-md-6">
+              <label for="nmUsuario" class="form-label text-body">
+                Nome Completo <span class="text-danger">*</span>
+              </label>
+              <input
+                type="text"
+                class="form-control"
+                id="nmUsuario"
+                formControlName="nmUsuario"
+                placeholder="Digite o nome completo"
+                [class.is-invalid]="isFieldInvalid('nmUsuario')"
+              />
+              @if (isFieldInvalid('nmUsuario')) {
+              <div class="invalid-feedback">
+                {{ getFieldError("nmUsuario") }}
+              </div>
+              }
+            </div>
+
+            <div class="col-md-6">
+              <label for="email" class="form-label text-body">
+                Email <span class="text-danger">*</span>
+              </label>
+              <input
+                type="email"
+                class="form-control"
+                id="email"
+                formControlName="email"
+                placeholder="email@exemplo.com"
+                [class.is-invalid]="isFieldInvalid('email')"
+              />
+              @if (isFieldInvalid('email')) {
+              <div class="invalid-feedback">
+                {{ getFieldError("email") }}
+              </div>
+              }
+            </div>
+
+            <div class="col-md-6">
+              <label for="cpf" class="form-label text-body">
+                CPF <span class="text-danger">*</span>
+              </label>
+              <input
+                type="text"
+                class="form-control"
+                id="cpf"
+                formControlName="cpf"
+                placeholder="000.000.000-00"
+                maxlength="14"
+                [class.is-invalid]="isFieldInvalid('cpf')"
+              />
+              @if (isFieldInvalid('cpf')) {
+              <div class="invalid-feedback">
+                {{ getFieldError("cpf") }}
+              </div>
+              }
+            </div>
+
+            <div class="col-md-6">
+              <label for="telefone" class="form-label text-body">
+                Telefone
+              </label>
+              <input
+                type="text"
+                class="form-control"
+                id="telefone"
+                formControlName="telefone"
+                placeholder="(00) 00000-0000"
+                maxlength="20"
+                [class.is-invalid]="isFieldInvalid('telefone')"
+              />
+              @if (isFieldInvalid('telefone')) {
+              <div class="invalid-feedback">
+                {{ getFieldError("telefone") }}
+              </div>
+              }
+            </div>
+
+            <div class="col-12">
+              <label class="form-label text-body">
+                Tipo de Autenticação <span class="text-danger">*</span>
+              </label>
+              <div class="d-flex gap-3">
+                @for (prov of providers; track prov.value) {
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    [id]="'provider_' + prov.value"
+                    [value]="prov.value"
+                    formControlName="provider"
+                  />
+                  <label
+                    class="form-check-label text-body"
+                    [for]="'provider_' + prov.value"
+                  >
+                    <i
+                      class="bi"
+                      [ngClass]="
+                        prov.value === 'GOOGLE' ? 'bi-google' : 'bi-shield-lock'
+                      "
+                    ></i>
+                    {{ prov.label }}
+                  </label>
+                </div>
+                }
+              </div>
+              <small class="text-muted">
+                Usuários Google devem usar o mesmo email da conta Google
+              </small>
+            </div>
+
+            @if (usuarioForm.get('provider')?.value === 'LOCAL') {
+            <div class="col-12">
+              <label for="senha" class="form-label text-body">
+                Senha @if (!modoEdicao()) {
+                <span class="text-danger">*</span>
+                }
+              </label>
+              <input
+                type="password"
+                class="form-control"
+                id="senha"
+                formControlName="senha"
+                [placeholder]="
+                  modoEdicao()
+                    ? 'Deixe em branco para manter a senha atual'
+                    : 'Mínimo 3 caracteres'
+                "
+                [class.is-invalid]="isFieldInvalid('senha')"
+              />
+              @if (isFieldInvalid('senha')) {
+              <div class="invalid-feedback">
+                {{ getFieldError("senha") }}
+              </div>
+              } @if (modoEdicao()) {
+              <small class="form-text text-muted">
+                Preencha apenas se deseja alterar a senha
+              </small>
+              }
+            </div>
+            }
+
+            <div class="col-12">
+              <label class="form-label text-body">
+                Perfil de Acesso <span class="text-danger">*</span>
+              </label>
+              <div class="roles-container">
+                @for (role of roles; track role.value) {
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    [id]="'role_' + role.value"
+                    [value]="role.value"
+                    [checked]="
+                      usuarioForm.get('roles')?.value?.includes(role.value)
+                    "
+                    (change)="onRoleChange($event, role.value)"
+                  />
+                  <label
+                    class="form-check-label text-light"
+                    [for]="'role_' + role.value"
+                  >
+                    {{ role.label }}
+                  </label>
+                </div>
+                }
+              </div>
+              @if (isFieldInvalid('roles')) {
+              <div class="text-danger small mt-1">
+                Selecione pelo menos um perfil
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="fecharModal()"
+            [disabled]="isSubmitting()"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="isSubmitting()"
+          >
+            @if (isSubmitting()) {
+            <span class="spinner-border spinner-border-sm me-2"></span>
+            Salvando... } @else {
+            <i class="bi bi-check-circle me-2"></i>
+            Salvar }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,85 @@
+<nav class="navbar navbar-expand-lg bg-body px-3 border-bottom">
+  <div class="container-fluid">
+    <button
+      class="btn btn-outline-primary me-2"
+      type="button"
+      data-bs-toggle="offcanvas"
+      data-bs-target="#sidebarOffcanvas"
+    >
+      <i class="bi bi-list"></i>
+    </button>
+
+    <a class="navbar-brand mb-0 h5 text-body">Bem-vindo ao Sistema</a>
+
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarUser"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse justify-content-end" id="navbarUser">
+      @if (currentUser(); as user) {
+
+      <!-- DESKTOP -->
+      <div class="d-none d-lg-flex align-items-center gap-3">
+        <select
+          class="form-select form-select-sm w-auto text-body"
+          [value]="themeAtual"
+          (change)="trocarTema($event)"
+        >
+          <option value="light">Claro</option>
+          <option value="dark">Escuro</option>
+          <option value="access">Acessível</option>
+        </select>
+
+        <div class="text-end me-2">
+          <div class="fw-semibold text-body">{{ user.nmUsuario }}</div>
+          <small class="text-body">{{ getRoleLabel(user.roles) }}</small>
+        </div>
+
+        <i class="bi bi-person-circle fs-4 text-primary"></i>
+
+        <button class="btn btn-sm btn-outline-danger ms-2" (click)="logout()">
+          <i class="bi bi-box-arrow-right"></i> Sair
+        </button>
+      </div>
+
+      <!-- MOBILE -->
+      <ul class="navbar-nav d-lg-none w-100 mt-3">
+        <li class="nav-item mb-2">
+          <select
+            class="form-select form-select-sm text-body"
+            [value]="themeAtual"
+            (change)="trocarTema($event)"
+          >
+            <option value="light">Claro</option>
+            <option value="dark">Escuro</option>
+            <option value="access">Acessível</option>
+          </select>
+        </li>
+
+        <li class="nav-item">
+          <span class="fw-semibold text-body">{{ user.nmUsuario }}</span
+          ><br />
+          <small class="text-body">{{ getRoleLabel(user.roles) }}</small>
+        </li>
+
+        <li class="nav-item fs-4 text-primary mt-2">
+          <i class="bi bi-person-circle"></i>
+        </li>
+
+        <li class="nav-item mt-3">
+          <button class="btn btn-danger w-100" (click)="logout()">
+            <i class="bi bi-box-arrow-right"></i> Sair
+          </button>
+        </li>
+      </ul>
+
+      }
+    </div>
+  </div>
+</nav>
+<app-sidebar />

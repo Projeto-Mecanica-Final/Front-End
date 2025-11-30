@@ -1,0 +1,57 @@
+// src/app/features/produtos/produtos-lista/produtos-lista.component.scss
+
+.produtos-page {
+  padding: 2rem;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+
+  h2 {
+    margin-bottom: 0.5rem;
+    color: #2c3e50;
+  }
+}
+
+.empty-state {
+  text-align: center;
+
+  i {
+    font-size: 4rem;
+    color: #dee2e6;
+  }
+
+  p {
+    font-size: 1.1rem;
+  }
+}
+
+.table {
+  thead th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.875rem;
+    color: #6c757d;
+  }
+
+  tbody tr {
+    &.table-warning {
+      background-color: #fff3cd !important;
+
+      &:hover {
+        background-color: #ffe69c !important;
+      }
+    }
+  }
+}
+
+.modal.show {
+  display: block !important;
+}
+
+.input-group-text {
+  background-color: var(--bg-body);
+}

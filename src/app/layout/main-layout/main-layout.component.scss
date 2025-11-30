@@ -1,0 +1,18 @@
+.main-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--content-bg);
+}
+
+.content-area {
+  flex: 1;
+  padding: 2rem;
+  overflow-x: hidden;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+  }
+}
