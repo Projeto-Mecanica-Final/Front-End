@@ -54,7 +54,9 @@
   background-color: var(--bg-body);
 }
 
-.btn-cadastrar-primeiro {
-  padding: 0.35rem 0.8rem;
-  font-size: 0.85rem;
+.botao .btn {
+  text-align: center;
+  padding: 0.25rem 0.65rem;
+  font-size: 1rem;
+  border-radius: 0.4rem;
 }
