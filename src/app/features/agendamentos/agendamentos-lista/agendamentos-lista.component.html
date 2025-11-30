@@ -33,7 +33,6 @@
           </div>
         </div>
 
-        <!-- Filtro de Status -->
         <div class="col-md-12">
           <div class="status-filters">
             @for (status of statusOptions; track status.value) {
@@ -114,11 +113,11 @@
 
                   <!-- Dropdown Menu -->
                   @if (isDropdownAberto(agendamento.cdAgendamento)) {
-                  <div class="status-dropdown-menu">
+                  <div class="status-dropdown-menu bg-body">
                     @for (statusOpt of statusDropdownOptions; track
                     statusOpt.value) {
                     <div
-                      class="status-dropdown-item"
+                      class="status-dropdown-item bg-body"
                       [class.active]="agendamento.status === statusOpt.value"
                       (click)="
                         mudarStatus(agendamento, statusOpt.value, $event)
@@ -128,7 +127,7 @@
                         class="bi bi-{{ statusOpt.icon }} me-2"
                         [class]="'text-' + statusOpt.class"
                       ></i>
-                      <span>{{ statusOpt.label }}</span>
+                      <span class="text-body">{{ statusOpt.label }}</span>
                       @if (agendamento.status === statusOpt.value) {
                       <i class="bi bi-check2 ms-auto text-success"></i>
                       }
