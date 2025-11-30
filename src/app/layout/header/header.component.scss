@@ -1,6 +1,7 @@
 .header {
   height: 70px;
-  background-color: var(--header-bg);
+  background-color: rgba(11, 44, 230, 0.205) !important;
+  // background-color: var(--header-bg);
   border-bottom: 1px solid var(--border-color);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   position: fixed;   
