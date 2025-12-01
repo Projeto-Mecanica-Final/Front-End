@@ -64,8 +64,10 @@
               <td class="text-body">
                 <strong>{{ cliente.nmCliente }}</strong>
               </td>
-              <td class="text-body">{{ cliente.cpf || "-" }}</td>
-              <td class="text-body">{{ cliente.telefone || "-" }}</td>
+              <td class="text-body">{{ formatarCPFExibicao(cliente.cpf) }}</td>
+              <td class="text-body">
+                {{ formatarTelefoneExibicao(cliente.telefone) }}
+              </td>
               <td class="text-body">{{ cliente.email || "-" }}</td>
               <td class="text-center text-body">
                 <div class="btn-group btn-group-sm">

@@ -178,6 +178,16 @@ export class ClientesListaComponent implements OnInit {
       });
     }
   }
+
+  formatarCPFExibicao(cpf?: string): string {
+  if (!cpf) return '-';
+  return formatarCPF(cpf);
+}
+
+formatarTelefoneExibicao(telefone?: string): string {
+  if (!telefone) return '-';
+  return formatarTelefone(telefone);
+}
   
   formatarCPFInput(event: any): void {
     const input = event.target;
