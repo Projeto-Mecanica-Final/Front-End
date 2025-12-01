@@ -16,21 +16,27 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       
         errorMessage = `Erro de conexão: ${error.error.message}`;
       } else {
-     
+       
         switch (error.status) {
           case 0:
-         
+          
             errorMessage = 'Não foi possível conectar ao servidor. Verifique se o backend está rodando.';
             break;
             
           case 401:
            
-            authService.logout();
-            errorMessage = 'Sessão expirada. Faça login novamente.';
+            if (req.url.includes('/auth/login')) {
+          
+              errorMessage = 'Email ou senha incorretos. Tente novamente.';
+            } else {
+             
+              authService.logout();
+              errorMessage = 'Sessão expirada. Faça login novamente.';
+            }
             break;
             
           case 403:
-           
+       
             errorMessage = 'Você não tem permissão para acessar este recurso.';
             router.navigate(['/dashboard']);
             break;
@@ -40,11 +46,11 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
             break;
             
           case 400:
-           
+        
             if (error.error?.message) {
               errorMessage = error.error.message;
             } else if (error.error?.errors) {
-         
+            
               const errors = error.error.errors;
               const firstError = Object.values(errors)[0];
               errorMessage = `Erro de validação: ${firstError}`;
@@ -58,7 +64,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
             break;
             
           default:
-         
+       
             if (error.error?.message) {
               errorMessage = error.error.message;
             } else if (error.message) {
