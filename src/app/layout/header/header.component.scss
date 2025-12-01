@@ -1,18 +1,16 @@
 .header {
   height: 70px;
-  background-color: rgba(189, 198, 241, 0.918) !important;
-  // background-color: var(--header-bg);
+  background-color: var(--header-bg) !important;
   border-bottom: 1px solid var(--border-color);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  position: fixed;   
+  position: fixed;
   top: 0;
   left: 0;
-  width: 100%;     
+  width: 100%;
   z-index: 999;
 }
 
 .header-content {
-  
   height: 100%;
   padding: 0 2rem;
   display: flex;
@@ -53,21 +51,5 @@
   i {
     font-size: 2rem;
     color: var(--primary-color);
-  }
-}
-
-.btn-outline-danger {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-
-  &:hover {
-    i {
-      transform: translateX(2px);
-    }
-  }
-
-  i {
-    transition: transform 0.2s ease;
   }
 }
