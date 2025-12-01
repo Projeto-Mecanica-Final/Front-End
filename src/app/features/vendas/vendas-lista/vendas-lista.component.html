@@ -195,7 +195,6 @@
                 id="cdCliente"
                 formControlName="cdCliente"
               >
-                <option value="">Venda Avulsa (Sem Cliente)</option>
                 @for (cliente of clientes(); track cliente.cdCliente) {
                 <option [value]="cliente.cdCliente">
                   {{ cliente.nmCliente }}
@@ -204,10 +203,6 @@
                 </option>
                 }
               </select>
-              <small class="text-muted">
-                <i class="bi bi-info-circle me-1"></i>
-                Opcional - deixe em branco para venda avulsa
-              </small>
             </div>
 
             <div class="col-md-6">
@@ -429,7 +424,6 @@
                 Cliente
               </label>
               <div class="info-value text-muted">
-                {{ venda.clienteModel?.nmCliente || "Venda Avulsa" }}
                 @if (venda.clienteModel?.cpf) {
                 <br />
                 <small class="text-muted"
