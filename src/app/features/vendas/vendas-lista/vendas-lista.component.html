@@ -20,20 +20,11 @@
         <span class="input-group-text">
           <i class="bi bi-search"></i>
         </span>
-        <input
-          type="text"
-          class="form-control"
-          placeholder="Buscar por cliente ou atendente..."
-          [ngModel]="searchTerm()"
-          (ngModelChange)="searchTerm.set($event); aplicarFiltro()"
-        />
+        <input type="text" class="form-control" placeholder="Buscar por cliente ou atendente..."
+          [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event); aplicarFiltro()" />
         @if (searchTerm()) {
-        <button
-          class="btn btn-outline-secondary"
-          type="button"
-          (click)="searchTerm.set(''); aplicarFiltro()"
-          title="Limpar busca"
-        >
+        <button class="btn btn-outline-secondary" type="button" (click)="searchTerm.set(''); aplicarFiltro()"
+          title="Limpar busca">
           <i class="bi bi-x-lg"></i>
         </button>
         }
@@ -78,11 +69,10 @@
                 <small>{{ formatarData(venda.dataVenda) }}</small>
               </td>
               <td class="text-body">
+                {{ venda.clienteModel?.nmCliente || 'Sem cliente' }}
                 @if (venda.clienteModel?.cpf) {
                 <br />
-                <small class="text-muted"
-                  >CPF: {{ venda.clienteModel?.cpf }}</small
-                >
+                <small class="text-muted">CPF: {{ venda.clienteModel?.cpf }}</small>
                 }
               </td>
               <td class="text-body">
@@ -123,14 +113,10 @@
               <td class="text-body">
                 <strong class="text-success fs-5">{{
                   formatarMoeda(venda.vlTotal)
-                }}</strong>
+                  }}</strong>
               </td>
               <td class="text-center">
-                <button
-                  class="btn btn-sm btn-outline-primary"
-                  title="Ver Detalhes"
-                  (click)="abrirDetalhes(venda)"
-                >
+                <button class="btn btn-sm btn-outline-primary" title="Ver Detalhes" (click)="abrirDetalhes(venda)">
                   <i class="bi bi-eye"></i>
                 </button>
               </td>
@@ -169,11 +155,7 @@
           <i class="bi bi-cart-plus me-2"></i>
           Nova Venda
         </h5>
-        <button
-          type="button"
-          class="btn-close btn-close-white"
-          (click)="fecharModal()"
-        ></button>
+        <button type="button" class="btn-close btn-close-white" (click)="fecharModal()"></button>
       </div>
 
       <form [formGroup]="vendaForm" (ngSubmit)="salvar()">
@@ -190,11 +172,7 @@
               <label for="cdCliente" class="form-label text-body">
                 Cliente
               </label>
-              <select
-                class="form-select"
-                id="cdCliente"
-                formControlName="cdCliente"
-              >
+              <select class="form-select" id="cdCliente" formControlName="cdCliente">
                 @for (cliente of clientes(); track cliente.cdCliente) {
                 <option [value]="cliente.cdCliente">
                   {{ cliente.nmCliente }}
@@ -209,11 +187,7 @@
               <label for="formaPagamento" class="form-label text-body">
                 Forma de Pagamento <span class="text-danger">*</span>
               </label>
-              <select
-                class="form-select"
-                id="formaPagamento"
-                formControlName="formaPagamento"
-              >
+              <select class="form-select" id="formaPagamento" formControlName="formaPagamento">
                 <option value="">Selecione a forma de pagamento</option>
                 @for (forma of formasPagamento; track forma.value) {
                 <option [value]="forma.value">{{ forma.label }}</option>
@@ -233,11 +207,8 @@
                 <div class="card-body">
                   <div class="row g-2">
                     <div class="col-md-6">
-                      <select
-                        class="form-select"
-                        [(ngModel)]="produtoSelecionado"
-                        [ngModelOptions]="{ standalone: true }"
-                      >
+                      <select class="form-select" [(ngModel)]="produtoSelecionado"
+                        [ngModelOptions]="{ standalone: true }">
                         <option [ngValue]="null">Selecione um produto</option>
                         @for (produto of produtos(); track produto.cdProduto) {
                         <option [ngValue]="produto.cdProduto">
@@ -249,21 +220,11 @@
                       </select>
                     </div>
                     <div class="col-md-3">
-                      <input
-                        type="number"
-                        class="form-control"
-                        placeholder="Quantidade"
-                        min="1"
-                        [(ngModel)]="quantidadeProduto"
-                        [ngModelOptions]="{ standalone: true }"
-                      />
+                      <input type="number" class="form-control" placeholder="Quantidade" min="1"
+                        [(ngModel)]="quantidadeProduto" [ngModelOptions]="{ standalone: true }" />
                     </div>
                     <div class="col-md-3">
-                      <button
-                        type="button"
-                        class="btn btn-success w-100"
-                        (click)="adicionarProduto()"
-                      >
+                      <button type="button" class="btn btn-success w-100" (click)="adicionarProduto()">
                         <i class="bi bi-plus-circle me-1"></i>
                         Adicionar
                       </button>
@@ -295,7 +256,7 @@
                         <br />
                         <small class="text-muted">{{
                           item.produto.dsProduto
-                        }}</small>
+                          }}</small>
                         }
                       </td>
                       <td class="text-body">
@@ -304,20 +265,16 @@
                       <td class="text-body">
                         <span class="badge bg-secondary">{{
                           item.quantidade
-                        }}</span>
+                          }}</span>
                       </td>
                       <td class="text-body">
                         <strong class="text-success">{{
                           formatarMoeda(item.vlTotal)
-                        }}</strong>
+                          }}</strong>
                       </td>
                       <td class="text-end">
-                        <button
-                          type="button"
-                          class="btn btn-sm btn-outline-danger"
-                          (click)="removerProduto(item.cdProduto)"
-                          title="Remover"
-                        >
+                        <button type="button" class="btn btn-sm btn-outline-danger"
+                          (click)="removerProduto(item.cdProduto)" title="Remover">
                           <i class="bi bi-trash"></i>
                         </button>
                       </td>
@@ -347,21 +304,12 @@
         </div>
 
         <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            (click)="fecharModal()"
-            [disabled]="isSubmitting()"
-          >
+          <button type="button" class="btn btn-secondary" (click)="fecharModal()" [disabled]="isSubmitting()">
             Cancelar
           </button>
-          <button
-            type="submit"
-            class="btn btn-primary btn-lg"
-            [disabled]="
+          <button type="submit" class="btn btn-primary btn-lg" [disabled]="
               isSubmitting() || itensVenda().length === 0 || vendaForm.invalid
-            "
-          >
+            ">
             @if (isSubmitting()) {
             <span class="spinner-border spinner-border-sm me-2"></span>
             Processando... } @else {
@@ -383,11 +331,7 @@
           <i class="bi bi-receipt me-2"></i>
           Detalhes da Venda
         </h5>
-        <button
-          type="button"
-          class="btn-close btn-close-white"
-          (click)="fecharDetalhes()"
-        ></button>
+        <button type="button" class="btn-close btn-close-white" (click)="fecharDetalhes()"></button>
       </div>
 
       <div class="modal-body">
@@ -424,11 +368,10 @@
                 Cliente
               </label>
               <div class="info-value text-muted">
+                {{ venda.clienteModel?.nmCliente || 'Sem cliente' }}
                 @if (venda.clienteModel?.cpf) {
                 <br />
-                <small class="text-muted"
-                  >CPF: {{ venda.clienteModel?.cpf }}</small
-                >
+                <small class="text-muted">CPF: {{ venda.clienteModel?.cpf }}</small>
                 }
               </div>
             </div>
@@ -487,7 +430,7 @@
               <div class="info-value text-muted">
                 <strong class="text-success fs-4">{{
                   formatarMoeda(venda.vlTotal)
-                }}</strong>
+                  }}</strong>
               </div>
             </div>
           </div>
@@ -516,18 +459,18 @@
                   <td class="text-body">
                     <strong>{{
                       item.produto?.nmProduto || getNomeProduto(item.cdProduto)
-                    }}</strong>
+                      }}</strong>
                   </td>
                   <td class="text-center">
                     <span class="badge bg-secondary">{{
                       item.quantidade
-                    }}</span>
+                      }}</span>
                   </td>
                   <td class="text-end">{{ formatarMoeda(item.vlUnitario) }}</td>
                   <td class="text-end">
                     <strong class="text-success">{{
                       formatarMoeda(item.vlTotal)
-                    }}</strong>
+                      }}</strong>
                   </td>
                 </tr>
                 }
@@ -538,7 +481,7 @@
                   <th class="text-end">
                     <strong class="text-success fs-5">{{
                       formatarMoeda(venda.vlTotal)
-                    }}</strong>
+                      }}</strong>
                   </th>
                 </tr>
               </tfoot>
@@ -555,19 +498,11 @@
       </div>
 
       <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-secondary"
-          (click)="fecharDetalhes()"
-        >
+        <button type="button" class="btn btn-secondary" (click)="fecharDetalhes()">
           <i class="bi bi-x-circle me-2"></i>
           Fechar
         </button>
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="imprimirComprovante(vendaSelecionada()!)"
-        >
+        <button type="button" class="btn btn-primary" (click)="imprimirComprovante(vendaSelecionada()!)">
           <i class="bi bi-printer me-2"></i>
           Imprimir Comprovante
         </button>
