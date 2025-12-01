@@ -78,9 +78,6 @@
                 <small>{{ formatarData(venda.dataVenda) }}</small>
               </td>
               <td class="text-body">
-                <strong>{{
-                  venda.clienteModel?.nmCliente || "Venda Avulsa"
-                }}</strong>
                 @if (venda.clienteModel?.cpf) {
                 <br />
                 <small class="text-muted"
