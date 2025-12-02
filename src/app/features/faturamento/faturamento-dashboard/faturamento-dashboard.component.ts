@@ -62,21 +62,25 @@ export class FaturamentoDashboardComponent implements OnInit {
     });
   }
 
-  aplicarFiltro(): Promise<void> {
-    const { dataInicio, dataFim } = this.filtroForm.value;
+ aplicarFiltro(): Promise<void> {
+  const { dataInicio, dataFim } = this.filtroForm.value;
 
-    return new Promise(resolve => {
-      this.faturamentoService.listarPorPeriodo(dataInicio, dataFim).subscribe({
-        next: faturamentos => {
-          this.faturamentos.set(faturamentos);
-          this.faturamentosFiltrados.set(faturamentos);
-          this.calcularTotalPeriodo();
-          resolve();
-        },
-        error: () => resolve()
-      });
+  return new Promise(resolve => {
+    this.faturamentoService.listarPorPeriodo(dataInicio, dataFim).subscribe({
+      next: faturamentos => {
+        const faturamentosOrdenados = [...faturamentos].sort((a, b) => {
+          return new Date(b.dataVenda).getTime() - new Date(a.dataVenda).getTime();
+        });
+        
+        this.faturamentos.set(faturamentosOrdenados);
+        this.faturamentosFiltrados.set(faturamentosOrdenados);
+        this.calcularTotalPeriodo();
+        resolve();
+      },
+      error: () => resolve()
     });
-  }
+  });
+}
 
   calcularTotalPeriodo(): void {
     const total = this.faturamentosFiltrados().reduce((sum, f) => sum + f.vlTotal, 0);
